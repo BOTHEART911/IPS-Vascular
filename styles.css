@@ -229,6 +229,15 @@ textarea { resize:vertical; min-height:80px; }
 .bc-lbl-mes { font-size:0.66rem; font-weight:700; color:var(--text-soft); line-height:1; }
 .bc-lbl-anio { font-size:0.56rem; font-weight:800; color:var(--text-muted); line-height:1; opacity:.7; }
 .bc-lbl-anio.is-new { color:var(--primary); opacity:1; }
+/* Barras sólidas (estilo imagen de referencia) */
+.bc-bar rect { fill:#11212d; transition:fill .25s ease-out; }
+/* ¿Prefieres las barras en azul de marca? cambia #11212d por var(--primary) */
+/* ¿Resaltar el mes pico? descomenta: .bc-bar--best rect { fill:var(--primary); } */
+
+/* Años condensados por grupo */
+.bar-chart-years { width:100%; display:flex; margin-top:4px; }
+.bc-anio-group { min-width:0; display:flex; align-items:center; justify-content:center; }
+.bc-anio-pill { font-size:0.6rem; font-weight:800; letter-spacing:0.4px; color:var(--primary); background:var(--primary-soft); padding:1px 9px; border-radius:var(--r-pill); }
 
 /* Rank list */
 .rank-list { display:flex; flex-direction:column; gap:8px; }
