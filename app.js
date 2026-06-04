@@ -561,19 +561,28 @@ const Bot = {
     }
   },
 
-  async mostrarQR(){
+ async mostrarQR(){
     const boxQR=$('#bot-qr-box'); boxQR.innerHTML='<p class="muted">Generando QR…</p>';
+    const ayuda='<p class="muted">Escanéalo desde WhatsApp → Dispositivos vinculados → Vincular un dispositivo. El QR se renueva cada pocos segundos; si caduca, vuelve a tocar el botón.</p>';
     try{
       const r=await apiGet('botQR');
-      let qr=r.qr||'';
-      if(!qr){ boxQR.innerHTML='<p class="muted">No se recibió QR. Revisa el estado del bot.</p>'; return; }
-      if(/^https?:\/\//.test(qr) || qr.indexOf('data:')===0){
-        boxQR.innerHTML=`<img class="bot-qr-img" src="${qr}" alt="QR" onerror="this.replaceWith(document.createTextNode('No se pudo mostrar el QR'))"/><p class="muted">Escanéalo desde WhatsApp → Dispositivos vinculados.</p>`;
-      } else if(/^[A-Za-z0-9+/=]+$/.test(qr) && qr.length>100){
-        boxQR.innerHTML=`<img class="bot-qr-img" src="data:image/png;base64,${qr}" alt="QR"/><p class="muted">Escanéalo desde WhatsApp → Dispositivos vinculados.</p>`;
+      let qr=String(r.qr||'').trim();
+
+      // El QR de WhatsApp es la IMAGEN que genera BuilderBot. Se muestra tal cual;
+      // NUNCA se vuelve a "dibujar" desde texto, porque eso crea un QR que WhatsApp no reconoce.
+      if(qr.indexOf('data:image')===0){
+        boxQR.innerHTML=`<img class="bot-qr-img" src="${qr}" alt="QR de WhatsApp"/>${ayuda}`;
+      } else if(/^https?:\/\//.test(qr)){
+        boxQR.innerHTML=`<img class="bot-qr-img" src="${qr}" alt="QR de WhatsApp" onerror="this.replaceWith(document.createTextNode('No se pudo cargar la imagen del QR.'))"/>${ayuda}`;
+      } else if(/^[A-Za-z0-9+/=\s]+$/.test(qr) && qr.replace(/\s+/g,'').length>100){
+        boxQR.innerHTML=`<img class="bot-qr-img" src="data:image/png;base64,${qr.replace(/\s+/g,'')}" alt="QR de WhatsApp"/>${ayuda}`;
       } else {
-        // texto plano del QR → usar API pública de imagen QR
-        boxQR.innerHTML=`<img class="bot-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=230x230&data=${encodeURIComponent(qr)}" alt="QR"/><p class="muted">Escanéalo desde WhatsApp → Dispositivos vinculados.</p>`;
+        // No llegó una imagen válida: NO inventamos un QR. Pedimos reintentar.
+        boxQR.innerHTML=`<div class="bot-status bot-status--unknown" style="margin-top:0">
+          <div class="bot-status__icon">⚠️</div>
+          <div class="bot-status__txt">El bot aún no entregó el QR</div>
+          <div class="bot-status__sub">Verifica que el estado sea "Esperando escaneo" y vuelve a tocar el botón en unos segundos.</div>
+        </div>`;
       }
     }catch(e){ boxQR.innerHTML=`<p class="muted">Error al generar QR: ${escapeHtml(e.message)}</p>`; }
   },
