@@ -661,7 +661,7 @@ const Config = {
     const cont=$('#cfg-content');
     cont.innerHTML=`
       ${this.seccion('usuarios','👥 Usuarios', this.renderUsuarios())}
-   ${this.seccion('bot','🤖 Conexión BuilderBot', `
+   ${this.seccion('bot','🤖 Conexión HeartSync', `
         <label>Endpoint base</label>
         <div class="cfg-secret-row"><input id="cfg-BB_ENDPOINT_BASE" type="password" value="${v('BB_ENDPOINT_BASE')}"/>
           <button type="button" class="cfg-secret-toggle" data-toggle="cfg-BB_ENDPOINT_BASE">👁</button></div>
@@ -843,7 +843,7 @@ async function checkVersion(){
   try{
     const r=await fetch('./version.js?t='+Date.now(),{cache:'no-store'}); if(!r.ok) return;
     const j=await r.json(); const sv=String(j.version||'').trim(); if(!sv) return;
-    if(!APP_VERSION_LOADED){ APP_VERSION_LOADED=sv; ['#app-version-number','#app-version-number-2'].forEach(s=>{const el=$(s); if(el) el.textContent='Versión '+sv;}); return; }
+    if(!APP_VERSION_LOADED){ APP_VERSION_LOADED=sv; ['#app-version-number','#app-version-number-2','#app-version-number-3'].forEach(s=>{const el=$(s); if(el) el.textContent='Versión '+sv;}); return; }
     if(sv!==APP_VERSION_LOADED){ try{ const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); }catch(e){} location.reload(); }
   }catch(e){}
 }
