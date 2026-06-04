@@ -501,20 +501,14 @@ const Pacientes = {
    ============================================================ */
 const Bot = {
   silenciado:false,
-  async abrir(){ showView('bot'); this.render(); await this.refrescarEstado(); },
+  async abrir(){ showView('bot'); this.render(); },
   render(){
     $('#bot-content').innerHTML=`
-      <div id="bot-status" class="bot-status bot-status--unknown">
-        <div class="bot-status__icon">⏳</div>
-        <div class="bot-status__txt">Consultando estado…</div>
-        <div class="bot-status__sub">Un momento por favor</div>
-      </div>
-
       <div class="bot-section">
         <h3 class="bot-section__title">📱 Conectar WhatsApp</h3>
-        <p class="muted">Si tu bot está desconectado, genera el código QR y escanéalo desde WhatsApp en tu teléfono.</p>
-        <button id="bot-qr-btn" class="btn btn-primary btn-block mt-sm">Mostrar código QR</button>
-        <div id="bot-qr-box" style="text-align:center"></div>
+        <p class="muted">El código QR para vincular el teléfono se genera en el panel de BuilderBot. Ábrelo, entra a tu bot y escanea el QR desde WhatsApp → Dispositivos vinculados.</p>
+        <a class="btn btn-primary btn-block mt-sm" href="https://app.builderbot.cloud" target="_blank" rel="noopener">Abrir panel de BuilderBot</a>
+        <p class="muted mt-sm" style="font-size:0.78rem;">Tip: una vez vinculado, no necesitas repetir esto salvo que cierres la sesión de WhatsApp.</p>
       </div>
 
       <div class="bot-section">
@@ -538,53 +532,11 @@ const Bot = {
         <button class="bot-action" id="bot-clear" style="width:100%;margin-top:10px;flex-direction:row;gap:10px"><span class="bot-action__icon">🧹</span>Limpiar conversación</button>
       </div>`;
 
-    $('#bot-qr-btn').addEventListener('click',()=>this.mostrarQR());
     $('#bot-reboot').addEventListener('click',()=>this.reiniciar());
     $('#bot-mute').addEventListener('click',()=>this.toggleMute());
     $('#bot-block').addEventListener('click',()=>this.contacto('botBloquear','Bloquear contacto'));
     $('#bot-unblock').addEventListener('click',()=>this.contacto('botDesbloquear','Desbloquear contacto'));
     $('#bot-clear').addEventListener('click',()=>this.contacto('botLimpiar','Limpiar conversación'));
-  },
-
-  async refrescarEstado(){
-    const box=$('#bot-status'); if(!box) return;
-    try{
-      const r=await apiGet('botEstado');
-      const st=String(r.status||'UNKNOWN').toUpperCase();
-      if(st==='ONLINE'){ box.className='bot-status bot-status--online'; box.innerHTML='<div class="bot-status__icon">🟢</div><div class="bot-status__txt">Tu bot está conectado</div><div class="bot-status__sub">Funcionando correctamente</div>'; }
-      else if(st==='READY_TO_SCAN'){ box.className='bot-status bot-status--scan'; box.innerHTML='<div class="bot-status__icon">🟡</div><div class="bot-status__txt">Esperando que escanees el QR</div><div class="bot-status__sub">Genera el QR abajo y escanéalo</div>'; }
-      else if(st==='OFFLINE'||st==='FAILED'){ box.className='bot-status bot-status--offline'; box.innerHTML='<div class="bot-status__icon">🔴</div><div class="bot-status__txt">Tu bot está desconectado</div><div class="bot-status__sub">Genera el QR para reconectarlo</div>'; }
-      else { box.className='bot-status bot-status--unknown'; box.innerHTML=`<div class="bot-status__icon">⚪</div><div class="bot-status__txt">Estado: ${escapeHtml(st)}</div><div class="bot-status__sub">Toca actualizar para reintentar</div>`; }
-    }catch(e){
-      box.className='bot-status bot-status--unknown';
-      box.innerHTML=`<div class="bot-status__icon">⚪</div><div class="bot-status__txt">No se pudo consultar</div><div class="bot-status__sub">${escapeHtml(e.message)}</div>`;
-    }
-  },
-
- async mostrarQR(){
-    const boxQR=$('#bot-qr-box'); boxQR.innerHTML='<p class="muted">Generando QR…</p>';
-    const ayuda='<p class="muted">Escanéalo desde WhatsApp → Dispositivos vinculados → Vincular un dispositivo. El QR se renueva cada pocos segundos; si caduca, vuelve a tocar el botón.</p>';
-    try{
-      const r=await apiGet('botQR');
-      let qr=String(r.qr||'').trim();
-
-      // El QR de WhatsApp es la IMAGEN que genera BuilderBot. Se muestra tal cual;
-      // NUNCA se vuelve a "dibujar" desde texto, porque eso crea un QR que WhatsApp no reconoce.
-      if(qr.indexOf('data:image')===0){
-        boxQR.innerHTML=`<img class="bot-qr-img" src="${qr}" alt="QR de WhatsApp"/>${ayuda}`;
-      } else if(/^https?:\/\//.test(qr)){
-        boxQR.innerHTML=`<img class="bot-qr-img" src="${qr}" alt="QR de WhatsApp" onerror="this.replaceWith(document.createTextNode('No se pudo cargar la imagen del QR.'))"/>${ayuda}`;
-      } else if(/^[A-Za-z0-9+/=\s]+$/.test(qr) && qr.replace(/\s+/g,'').length>100){
-        boxQR.innerHTML=`<img class="bot-qr-img" src="data:image/png;base64,${qr.replace(/\s+/g,'')}" alt="QR de WhatsApp"/>${ayuda}`;
-      } else {
-        // No llegó una imagen válida: NO inventamos un QR. Pedimos reintentar.
-        boxQR.innerHTML=`<div class="bot-status bot-status--unknown" style="margin-top:0">
-          <div class="bot-status__icon">⚠️</div>
-          <div class="bot-status__txt">El bot aún no entregó el QR</div>
-          <div class="bot-status__sub">Verifica que el estado sea "Esperando escaneo" y vuelve a tocar el botón en unos segundos.</div>
-        </div>`;
-      }
-    }catch(e){ boxQR.innerHTML=`<p class="muted">Error al generar QR: ${escapeHtml(e.message)}</p>`; }
   },
 
   async reiniciar(){
@@ -616,7 +568,7 @@ const Bot = {
     catch(e){ stopLoading(); alertErr('Error',e.message); }
   },
 
-  setupListeners(){ const r=$('#bot-refresh'); if(r) r.addEventListener('click',()=>this.refrescarEstado()); }
+setupListeners(){}
 };
 
 /* ============================================================
