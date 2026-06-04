@@ -224,11 +224,11 @@ textarea { resize:vertical; min-height:80px; }
 /* Bar chart por mes (SVG) */
 .bar-chart-wrap { margin-top:6px; }
 .bar-chart { width:100%; height:120px; display:block; }
-.bar-chart-labels { width:100%; height:18px; display:block; margin-top:4px; }
-.bc-bar rect { fill:var(--primary-light); transition:fill .15s; }
-.bc-bar:hover rect { fill:var(--primary); }
-.bc-bar--best rect { fill:var(--accent); }
-.bc-lbl { font-size:6px; font-weight:700; fill:var(--text-muted); font-family:var(--font-body); }
+.bar-chart-labels { width:100%; display:flex; margin-top:6px; }
+.bc-lbl-cell { flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; gap:1px; }
+.bc-lbl-mes { font-size:0.66rem; font-weight:700; color:var(--text-soft); line-height:1; }
+.bc-lbl-anio { font-size:0.56rem; font-weight:800; color:var(--text-muted); line-height:1; opacity:.7; }
+.bc-lbl-anio.is-new { color:var(--primary); opacity:1; }
 
 /* Rank list */
 .rank-list { display:flex; flex-direction:column; gap:8px; }
