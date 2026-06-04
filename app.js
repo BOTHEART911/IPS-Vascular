@@ -181,30 +181,23 @@ function renderBarChart(d){
     return `<g class="bc-bar ${isb?'bc-bar--best':''}"><rect x="${i*bw+bw*0.15}" y="${100-h}" width="${bw*0.7}" height="${h}" rx="2"/><title>${etiquetaMes(x)}: ${x.total}</title></g>`;
   }).join('');
 
-  // Etiquetas de mes (una por barra)
-  const labelsMes=serie.map(x=>
-    `<div class="bc-lbl-cell"><span class="bc-lbl-mes">${String(x.mes).slice(0,3)}</span></div>`
-  ).join('');
-
-  // Años CONDENSADOS: un solo rótulo por año, ancho proporcional a sus meses
-  const grupos=[];
-  serie.forEach(x=>{
-    const a=x.anio||'';
-    const last=grupos[grupos.length-1];
-    if(last && last.anio===a) last.count++;
-    else grupos.push({anio:a, count:1});
-  });
-  const labelsAnio=grupos.map(g=>
-    `<div class="bc-anio-group" style="flex:${g.count} 1 0">${g.anio?`<span class="bc-anio-pill">'${String(g.anio).slice(-2)}</span>`:''}</div>`
-  ).join('');
+// Etiquetas de mes + año pequeñito debajo de cada mes
+  const labelsMes=serie.map((x,i)=>{
+    const anioPrev = i>0 ? serie[i-1].anio : null;
+    const esNuevo  = x.anio && x.anio!==anioPrev;   // resalta el primer mes de cada año
+    return `<div class="bc-lbl-cell">
+      <span class="bc-lbl-mes">${String(x.mes).slice(0,3)}</span>
+      ${x.anio?`<span class="bc-lbl-anio ${esNuevo?'is-new':''}">'${String(x.anio).slice(-2)}</span>`:''}
+    </div>`;
+  }).join('');
 
   return `<div class="dash-section"><h3 class="dash-section__title">📈 Solicitudes por mes</h3>
     <div class="bar-chart-wrap">
       <svg class="bar-chart" viewBox="0 0 100 110" preserveAspectRatio="none">${bars}</svg>
       <div class="bar-chart-labels">${labelsMes}</div>
-      <div class="bar-chart-years">${labelsAnio}</div>
     </div></div>`;
 }
+
 function etiquetaMes(x){ return x.anio ? `${String(x.mes).slice(0,3)} ${x.anio}` : String(x.mes); }
 
 function renderTopServicios(d){
@@ -432,16 +425,14 @@ const Profesionales = {
         <span class="estado-row__qty">${v}</span></div>`; }).join('');
       const serie=d.serieMes||[]; const maxM=Math.max(...serie.map(x=>x.total),1); const bw=serie.length?100/serie.length:0;
       const bars=serie.map((x,i)=>{const h=(x.total/maxM)*100; return `<g class="bc-bar"><rect x="${i*bw+bw*0.15}" y="${100-h}" width="${bw*0.7}" height="${h}" rx="2"/><title>${x.anio?String(x.mes).slice(0,3)+' '+x.anio:x.mes}: ${x.total}</title></g>`;}).join('');
-      const labels=serie.map(x=>
-        `<div class="bc-lbl-cell"><span class="bc-lbl-mes">${String(x.mes).slice(0,3)}</span></div>`
-      ).join('');
-      // Años CONDENSADOS: un rótulo por año, ancho proporcional a sus meses
-      const gruposP=[];
-      serie.forEach(x=>{ const a=x.anio||''; const last=gruposP[gruposP.length-1];
-        if(last && last.anio===a) last.count++; else gruposP.push({anio:a,count:1}); });
-      const labelsAnio=gruposP.map(g=>
-        `<div class="bc-anio-group" style="flex:${g.count} 1 0">${g.anio?`<span class="bc-anio-pill">'${String(g.anio).slice(-2)}</span>`:''}</div>`
-      ).join('');
+     const labels=serie.map((x,i)=>{
+        const anioPrev = i>0 ? serie[i-1].anio : null;
+        const esNuevo  = x.anio && x.anio!==anioPrev;
+        return `<div class="bc-lbl-cell">
+          <span class="bc-lbl-mes">${String(x.mes).slice(0,3)}</span>
+          ${x.anio?`<span class="bc-lbl-anio ${esNuevo?'is-new':''}">'${String(x.anio).slice(-2)}</span>`:''}
+        </div>`;
+      }).join('');
       const top=d.topServicios||[]; const maxS=Math.max(...top.map(x=>x.total),1);
       const servicios=top.map(x=>`<div class="rank-row"><div style="min-width:0"><div class="rank-row__name">${escapeHtml(x.nombre)}</div>
         <div class="rank-row__bar"><div class="rank-row__fill" style="width:${(x.total/maxS*100).toFixed(1)}%"></div></div></div><div class="rank-row__qty">${x.total}</div></div>`).join('');
@@ -454,10 +445,9 @@ const Profesionales = {
             <div class="prof-stats__kpi"><div class="prof-stats__kpi-val">${d.porEstado.REALIZADA||0}</div><div class="prof-stats__kpi-lbl">Realizadas</div></div>
           </div>
           <h4 style="margin:6px 0 8px;color:var(--primary)">Por estado</h4><div class="estado-bars">${estados}</div>
-      ${serie.length?`<h4 style="margin:14px 0 6px;color:var(--primary)">Por mes</h4>
+     ${serie.length?`<h4 style="margin:14px 0 6px;color:var(--primary)">Por mes</h4>
             <svg class="bar-chart" viewBox="0 0 100 110" preserveAspectRatio="none">${bars}</svg>
-            <div class="bar-chart-labels">${labels}</div>
-            <div class="bar-chart-years">${labelsAnio}</div>`:''}
+            <div class="bar-chart-labels">${labels}</div>`:''}
           ${top.length?`<h4 style="margin:14px 0 6px;color:var(--primary)">Servicios</h4><div class="rank-list">${servicios}</div>`:''}
         </div>`
       });
@@ -787,8 +777,53 @@ function setupNav(){
 let deferredPrompt=null;
 function isStandalone(){ return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true; }
 function isIOS(){ return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream; }
-window.addEventListener('beforeinstallprompt',(e)=>{ e.preventDefault(); deferredPrompt=e; const b=$('#btn-install'); if(b) b.style.display=''; });
 function setupInstall(){
+  $('#btn-install')?.addEventListener('click',async()=>{
+    // Flujo iOS: instrucciones con GIF (idéntico a Ramírez Group)
+    if(isIOS()){
+      Swal.fire({
+        icon:'info',
+        title:'¡Para Instalar en tu iPhone!',
+        html:`
+          <div style="text-align:center; margin-top:8px;">
+            <img src="https://res.cloudinary.com/dqqeavica/image/upload/v1780053848/heartsync_ojmqxm.gif" alt="Instalación de iOS"
+                 style="width:180px; max-width:70vw; height:auto; display:block; margin:0 auto 12px;">
+            <div style="margin-top:10px;">
+              <b>1.</b> Toca Compartir.<br><b>2.</b> Elige "Agregar a pantalla de inicio".<br><b>3.</b> Confirma "Agregar".
+            </div>
+          </div>`
+      });
+      return;
+    }
+    // Android: requiere beforeinstallprompt
+    if(!deferredPrompt){ Swal.fire({icon:'info',title:'Instalación no disponible todavía'}); return; }
+    const dp=deferredPrompt;
+    dp.prompt();
+    const choice=await dp.userChoice;
+    deferredPrompt=null;
+    if(choice.outcome==='accepted'){
+      Swal.fire({
+        icon:'success',
+        title:'¡App instalándose!',
+        html:`
+          <div style="text-align:center; margin-top:8px;">
+            <img src="https://res.cloudinary.com/dqqeavica/image/upload/v1780053848/heartsync_ojmqxm.gif" alt="Instalando app"
+                 style="width:180px; max-width:70vw; height:auto; display:block; margin:0 auto 12px;">
+            <div>Debes esperar unos segundos mientras el sistema instala la App.</div>
+            <div style="margin-top:10px;">
+              <b>Al desaparecer este aviso, puedes salir de esta vista. La App aparecerá en la pantalla principal de este dispositivo.</b>
+            </div>
+          </div>`,
+        timer:12000,
+        showConfirmButton:false
+      });
+    } else {
+      Swal.fire({icon:'info',title:'Instalación cancelada'});
+    }
+  });
+  ['btn-cont-web','btn-cont-web-ios'].forEach(id=>$('#'+id)?.addEventListener('click',iniciarSesion));
+}
+
   $('#btn-install')?.addEventListener('click',async()=>{ if(!deferredPrompt) return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; });
   ['btn-cont-web','btn-cont-web-ios'].forEach(id=>$('#'+id)?.addEventListener('click',iniciarSesion));
 }
