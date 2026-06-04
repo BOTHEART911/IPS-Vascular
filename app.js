@@ -214,7 +214,7 @@ function renderTopServicios(d){
    SOLICITUDES
    ============================================================ */
 const Solicitudes = {
-  data:[], filtroEstado:'TODOS', filtroTexto:'', profesionales:[], catalogos:null,
+  data:[], filtroEstado:'PENDIENTE', filtroTexto:'', profesionales:[], catalogos:null,
 
   async abrir(){
     showView('solicitudes');
