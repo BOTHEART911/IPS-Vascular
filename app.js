@@ -173,20 +173,36 @@ function renderBarChart(d){
   const max=Math.max(...serie.map(x=>x.total),1);
   const bw=100/serie.length;
   const best=serie.reduce((a,b)=>b.total>a.total?b:a,serie[0]);
-  const bars=serie.map((x,i)=>{ const h=(x.total/max)*100; const isb=(x.mes===best.mes && x.anio===best.anio);
-    return `<g class="bc-bar ${isb?'bc-bar--best':''}"><rect x="${i*bw+bw*0.15}" y="${100-h}" width="${bw*0.7}" height="${h}" rx="2"/><title>${etiquetaMes(x)}: ${x.total}</title></g>`; }).join('');
-  const labels=serie.map((x,i)=>{
-    const prev=serie[i-1];
-    const nuevoAnio = x.anio && (!prev || prev.anio!==x.anio);
-    return `<div class="bc-lbl-cell">
-      <span class="bc-lbl-mes">${String(x.mes).slice(0,3)}</span>
-      ${x.anio?`<span class="bc-lbl-anio ${nuevoAnio?'is-new':''}">'${String(x.anio).slice(-2)}</span>`:''}
-    </div>`;
+
+  // Barras
+  const bars=serie.map((x,i)=>{
+    const h=(x.total/max)*100;
+    const isb=(x.mes===best.mes && x.anio===best.anio);
+    return `<g class="bc-bar ${isb?'bc-bar--best':''}"><rect x="${i*bw+bw*0.15}" y="${100-h}" width="${bw*0.7}" height="${h}" rx="2"/><title>${etiquetaMes(x)}: ${x.total}</title></g>`;
   }).join('');
+
+  // Etiquetas de mes (una por barra)
+  const labelsMes=serie.map(x=>
+    `<div class="bc-lbl-cell"><span class="bc-lbl-mes">${String(x.mes).slice(0,3)}</span></div>`
+  ).join('');
+
+  // Años CONDENSADOS: un solo rótulo por año, ancho proporcional a sus meses
+  const grupos=[];
+  serie.forEach(x=>{
+    const a=x.anio||'';
+    const last=grupos[grupos.length-1];
+    if(last && last.anio===a) last.count++;
+    else grupos.push({anio:a, count:1});
+  });
+  const labelsAnio=grupos.map(g=>
+    `<div class="bc-anio-group" style="flex:${g.count} 1 0">${g.anio?`<span class="bc-anio-pill">'${String(g.anio).slice(-2)}</span>`:''}</div>`
+  ).join('');
+
   return `<div class="dash-section"><h3 class="dash-section__title">📈 Solicitudes por mes</h3>
     <div class="bar-chart-wrap">
       <svg class="bar-chart" viewBox="0 0 100 110" preserveAspectRatio="none">${bars}</svg>
-      <div class="bar-chart-labels">${labels}</div>
+      <div class="bar-chart-labels">${labelsMes}</div>
+      <div class="bar-chart-years">${labelsAnio}</div>
     </div></div>`;
 }
 function etiquetaMes(x){ return x.anio ? `${String(x.mes).slice(0,3)} ${x.anio}` : String(x.mes); }
