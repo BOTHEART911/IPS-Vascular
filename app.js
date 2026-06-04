@@ -538,7 +538,7 @@ const Bot = {
           <button class="bot-action" id="bot-reboot"><span class="bot-action__icon">🔄</span>Reiniciar</button>
           <button class="bot-action" id="bot-mute"><span class="bot-action__icon">🔇</span><span id="bot-mute-lbl">Silenciar</span></button>
         </div>
-        <button class="bot-action" id="bot-logout" style="width:100%;margin-top:10px;flex-direction:row;gap:10px;border-color:rgba(220,38,38,.30);color:#b91c1c"><span class="bot-action__icon">🗑️</span>Eliminar sesión</button>
+        <button class="bot-action" id="bot-logout" style="width:100%;margin-top:10px;flex-direction:row;justify-content:center;align-items:center;gap:10px;border-color:rgba(220,38,38,.30);color:#b91c1c"><span class="bot-action__icon">🗑️</span>Eliminar sesión</button>
       </div>
 
       <div class="bot-section">
@@ -551,7 +551,7 @@ const Bot = {
           <button class="bot-action" id="bot-block"><span class="bot-action__icon">🚫</span>Bloquear</button>
           <button class="bot-action" id="bot-unblock"><span class="bot-action__icon">✅</span>Desbloquear</button>
         </div>
-        <button class="bot-action" id="bot-clear" style="width:100%;margin-top:10px;flex-direction:row;gap:10px"><span class="bot-action__icon">🧹</span>Limpiar conversación</button>
+        <button class="bot-action" id="bot-clear" style="width:100%;margin-top:10px;flex-direction:row;justify-content:center;align-items:center;gap:10px"><span class="bot-action__icon">🧹</span>Limpiar conversación</button>
       </div>`;
 
     $('#bot-qr-btn').addEventListener('click',()=>this.mostrarQR());
