@@ -577,21 +577,28 @@ const Bot = {
     }
   },
 
-  async mostrarQR(){
-    const boxQR=$('#bot-qr-box'); boxQR.innerHTML='<p class="muted">Generando QR…</p>';
+async mostrarQR(){
+    const boxQR=$('#bot-qr-box');
+    boxQR.innerHTML='<p class="muted">Cargando código QR…</p>';
+    // Enlace público del QR (marca blanca). El projectId NO es secreto: es el mismo enlace
+    // que se comparte con el cliente. Se intenta traer del backend (config) y, si no llega, respaldo.
+    const FALLBACK='https://link.bbot.site/85c2e4d1-278c-45a8-af29-03b6cb3b32ac';
+    let url=FALLBACK;
     try{
       const r=await apiGet('botQR');
-      let qr=r.qr||'';
-      if(!qr){ boxQR.innerHTML='<p class="muted">No se recibió QR. Revisa el estado del bot.</p>'; return; }
-      if(/^https?:\/\//.test(qr) || qr.indexOf('data:')===0){
-        boxQR.innerHTML=`<img class="bot-qr-img" src="${qr}" alt="QR" onerror="this.replaceWith(document.createTextNode('No se pudo mostrar el QR'))"/><p class="muted">Escanéalo desde WhatsApp → Dispositivos vinculados.</p>`;
-      } else if(/^[A-Za-z0-9+/=]+$/.test(qr) && qr.length>100){
-        boxQR.innerHTML=`<img class="bot-qr-img" src="data:image/png;base64,${qr}" alt="QR"/><p class="muted">Escanéalo desde WhatsApp → Dispositivos vinculados.</p>`;
-      } else {
-        // texto plano del QR → usar API pública de imagen QR
-        boxQR.innerHTML=`<img class="bot-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=230x230&data=${encodeURIComponent(qr)}" alt="QR"/><p class="muted">Escanéalo desde WhatsApp → Dispositivos vinculados.</p>`;
+      if(r){
+        if(r.url) url=r.url;
+        else if(r.projectId) url='https://link.bbot.site/'+r.projectId;
+        else if(r.qr && /^https?:\/\//.test(r.qr)) url=r.qr;
       }
-    }catch(e){ boxQR.innerHTML=`<p class="muted">Error al generar QR: ${escapeHtml(e.message)}</p>`; }
+    }catch(e){ /* usamos el fallback */ }
+    boxQR.innerHTML=`
+      <div class="bot-qr-frame">
+        <iframe src="${url}" title="Código QR de WhatsApp" loading="lazy"
+                referrerpolicy="no-referrer" allow="camera; clipboard-read; clipboard-write"></iframe>
+      </div>
+      <p class="muted">Escanéalo desde WhatsApp → <b>Dispositivos vinculados</b>. El código se actualiza solo.</p>
+      <a class="btn btn-ghost btn-sm" href="${url}" target="_blank" rel="noopener">🔗 Abrir el QR en pantalla completa</a>`;
   },
 
   async reiniciar(){
