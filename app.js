@@ -370,25 +370,6 @@ const Solicitudes = {
     });
   },
 
-   // Eliminar sesión
-   
-   async eliminarSesion(){
-    const ok=await confirmar(
-      'Eliminar sesión',
-      'Esto cerrará la sesión de WhatsApp del bot y eliminará el despliegue actual.<br>Tendrás que generar un nuevo <b>código QR</b> y escanearlo para reconectarlo.<br><br>¿Deseas continuar?',
-      'Sí, eliminar sesión'
-    );
-    if(!ok) return;
-    startLoading();
-    try{
-      const r=await apiPost('botEliminarSesion',withUser({}));
-      stopLoading();
-      if(r.ok) alertOk('Sesión eliminada','El bot se desconectó. Genera un nuevo QR para volver a vincular WhatsApp.');
-      else alertWarn('Aviso','No se pudo confirmar la eliminación. Verifica el estado del bot.');
-      setTimeout(()=>this.refrescarEstado(),2000);
-    }catch(e){ stopLoading(); alertErr('Error',e.message); }
-  },
-
   setupListeners(){
     $$('#sol-chips-estado .chip').forEach(c=>c.addEventListener('click',()=>{
       $$('#sol-chips-estado .chip').forEach(x=>x.classList.remove('is-active'));
@@ -652,6 +633,23 @@ async mostrarQR(){
     startLoading();
     try{ const r=await apiPost(action,withUser({numero:num})); stopLoading(); if(r.ok) alertOk('Listo'); else alertWarn('Aviso','No se confirmó la acción.'); }
     catch(e){ stopLoading(); alertErr('Error',e.message); }
+  },
+
+async eliminarSesion(){
+    const ok=await confirmar(
+      'Eliminar sesión',
+      'Esto cerrará la sesión de WhatsApp del bot y eliminará el despliegue actual.<br>Tendrás que generar un nuevo <b>código QR</b> y escanearlo para reconectarlo.<br><br>¿Deseas continuar?',
+      'Sí, eliminar sesión'
+    );
+    if(!ok) return;
+    startLoading();
+    try{
+      const r=await apiPost('botEliminarSesion',withUser({}));
+      stopLoading();
+      if(r.ok) alertOk('Sesión eliminada','El bot se desconectó. Genera un nuevo QR para volver a vincular WhatsApp.');
+      else alertWarn('Aviso','No se pudo confirmar la eliminación. Verifica el estado del bot.');
+      setTimeout(()=>this.refrescarEstado(),2000);
+    }catch(e){ stopLoading(); alertErr('Error',e.message); }
   },
 
   setupListeners(){ const r=$('#bot-refresh'); if(r) r.addEventListener('click',()=>this.refrescarEstado()); }
