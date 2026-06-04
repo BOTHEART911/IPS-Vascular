@@ -588,58 +588,23 @@ const Bot = {
 
 async mostrarQR(){
     const boxQR=$('#bot-qr-box');
-    boxQR.innerHTML='<p class="muted">Verificando estado del bot…</p>';
-
-    // Enlace público del visor (config-driven, con respaldo)
-    let url='https://link.bbot.site/85c2e4d1-278c-45a8-af29-03b6cb3b32ac';
-    try{ const r=await apiGet('botQR'); if(r){ if(r.url) url=r.url; else if(r.projectId) url='https://link.bbot.site/'+r.projectId; } }catch(e){}
-
-    // 1) ¿Ya está conectado? Entonces no hace falta QR.
+    boxQR.innerHTML='<p class="muted">Generando código QR… (si el bot estaba apagado puede tardar unos segundos)</p>';
     try{
-      const est=await apiGet('botEstado');
-      if(String(est.status||'').toUpperCase()==='ONLINE'){
-        boxQR.innerHTML='<p class="muted">✅ Tu bot ya está conectado. No necesitas escanear ningún QR.</p>';
-        this.refrescarEstado(); return;
-      }
-    }catch(e){}
-
-    // 2) Iniciar una sesión de QR fresca (equivale a abrir la página de QR de BuilderBot).
-    boxQR.innerHTML='<p class="muted">⏳ Preparando la conexión… puede tardar 1–2 minutos. No cierres esta pantalla.</p>';
-    try{ await apiPost('botGenerarQR', withUser({})); }catch(e){}
-
-    // 3) Esperar READY_TO_SCAN y entonces mostrar el QR embebido.
-    let intentos=0;
-    const poll=async()=>{
-      intentos++;
-      let st='UNKNOWN';
-      try{ const e2=await apiGet('botEstado'); st=String(e2.status||'UNKNOWN').toUpperCase(); }catch(e){}
-      this.refrescarEstado();
-      const box=$('#bot-qr-box');
-      if(st==='READY_TO_SCAN'){ this._pintarIframeQR(url); return; }
-      if(st==='ONLINE'){ if(box) box.innerHTML='<p class="muted">✅ Tu bot se conectó correctamente.</p>'; return; }
-      if(box) box.innerHTML=`<p class="muted">⏳ Preparando la conexión… (${intentos*5}s). No cierres esta pantalla.</p>`;
-      if(intentos>=30){ this._pintarIframeQR(url); return; } // ~150s: lo mostramos igual
-      setTimeout(poll, 5000);
-    };
-    setTimeout(poll, 5000);
+      const r=await apiGet('botQR');
+      const qr=r && r.qr ? String(r.qr) : '';
+      if(!qr){ boxQR.innerHTML=`<p class="muted">${escapeHtml((r&&r.error)||'No se recibió el QR. Toca de nuevo en unos segundos.')}</p>
+        <button class="bot-action" id="bot-qr-regen" style="width:100%;flex-direction:row;gap:10px"><span class="bot-action__icon">🔄</span>Reintentar</button>`;
+        $('#bot-qr-regen')?.addEventListener('click',()=>this.mostrarQR()); return; }
+      const src = qr.indexOf('data:')===0 ? qr : (/^https?:\/\//.test(qr) ? qr : 'data:image/png;base64,'+qr);
+      boxQR.innerHTML=`
+        <img class="bot-qr-img" src="${src}" alt="Código QR de WhatsApp"
+             onerror="this.replaceWith(document.createTextNode('No se pudo mostrar el QR. Toca Regenerar.'))"/>
+        <p class="muted">Escanéalo desde WhatsApp → <b>Dispositivos vinculados</b>. El código se renueva cada cierto tiempo.</p>
+        <button class="bot-action" id="bot-qr-regen" style="width:100%;flex-direction:row;gap:10px"><span class="bot-action__icon">🔄</span>Regenerar QR</button>`;
+      $('#bot-qr-regen')?.addEventListener('click',()=>this.mostrarQR());
+    }catch(e){ boxQR.innerHTML=`<p class="muted">Error al generar QR: ${escapeHtml(e.message)}</p>`; }
   },
-
-  _pintarIframeQR(url){
-    const boxQR=$('#bot-qr-box'); if(!boxQR) return;
-    const src=url+(url.indexOf('?')<0?'?':'&')+'t='+Date.now();
-    boxQR.innerHTML=`
-      <div class="bot-qr-frame">
-        <iframe src="${src}" title="Código QR de WhatsApp" loading="lazy" referrerpolicy="no-referrer"></iframe>
-      </div>
-      <p class="muted">Escanéalo desde WhatsApp → <b>Dispositivos vinculados</b>. El código caduca a los pocos minutos.</p>
-      <div class="bot-btn-grid">
-        <button class="bot-action" id="bot-qr-regen"><span class="bot-action__icon">🔄</span>Regenerar QR</button>
-        <a class="bot-action" href="${url}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><span class="bot-action__icon">🔗</span>Abrir en pestaña</a>
-      </div>
-      <p class="muted" style="font-size:0.74rem;margin-top:8px">Si aparece <b>"Ups Error!"</b>, la sesión del QR caducó: toca <b>Regenerar QR</b>.</p>`;
-    $('#bot-qr-regen')?.addEventListener('click',()=>this.mostrarQR());
-  },
-
+   
   async reiniciar(){
     const ok=await confirmar('Reiniciar bot','El bot se reiniciará. Puede tardar unos segundos en volver a conectarse. ¿Continuar?','Sí, reiniciar');
     if(!ok) return;
@@ -697,11 +662,14 @@ const Config = {
     const cont=$('#cfg-content');
     cont.innerHTML=`
       ${this.seccion('usuarios','👥 Usuarios', this.renderUsuarios())}
-      ${this.seccion('bot','🤖 Conexión BuilderBot', `
+    ${this.seccion('bot','🤖 Conexión BuilderBot', `
         <label>Endpoint base</label><input id="cfg-BB_ENDPOINT_BASE" value="${v('BB_ENDPOINT_BASE')}"/>
         <label>Bot ID (API v2)</label><input id="cfg-BB_BOT_ID" value="${v('BB_BOT_ID')}"/>
         <label>Project ID (API v1 manager)</label><input id="cfg-BB_PROJECT_ID" value="${v('BB_PROJECT_ID')}"/>
-        <label>API Key</label>
+        <label>API Manager · general (bbc-…) — estado y QR</label>
+        <div class="cfg-secret-row"><input id="cfg-BB_MANAGER_API" type="password" value="${v('BB_MANAGER_API')}"/>
+          <button type="button" class="cfg-secret-toggle" data-toggle="cfg-BB_MANAGER_API">👁</button></div>
+        <label>API Key · bot (bb-…) — mensajes y control</label>
         <div class="cfg-secret-row"><input id="cfg-BB_API_KEY" type="password" value="${v('BB_API_KEY')}"/>
           <button type="button" class="cfg-secret-toggle" data-toggle="cfg-BB_API_KEY">👁</button></div>
         <div class="cfg-section__foot"><button class="btn btn-primary btn-sm" data-save="bot">💾 Guardar</button></div>
@@ -779,7 +747,7 @@ const Config = {
   },
   async guardar(seccion){
     let claves=[];
-    if(seccion==='bot') claves=['BB_ENDPOINT_BASE','BB_BOT_ID','BB_PROJECT_ID','BB_API_KEY'];
+   if(seccion==='bot') claves=['BB_ENDPOINT_BASE','BB_BOT_ID','BB_PROJECT_ID','BB_MANAGER_API','BB_API_KEY'];
     else if(seccion==='wa') claves=['WA_TEMPLATE_ASIGNADA'];
     const obj={}; claves.forEach(k=>{ const el=$('#cfg-'+k); if(el) obj[k]=el.value; });
     startLoading();
