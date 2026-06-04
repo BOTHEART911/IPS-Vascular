@@ -454,9 +454,10 @@ const Profesionales = {
             <div class="prof-stats__kpi"><div class="prof-stats__kpi-val">${d.porEstado.REALIZADA||0}</div><div class="prof-stats__kpi-lbl">Realizadas</div></div>
           </div>
           <h4 style="margin:6px 0 8px;color:var(--primary)">Por estado</h4><div class="estado-bars">${estados}</div>
-       ${serie.length?`<h4 style="margin:14px 0 6px;color:var(--primary)">Por mes</h4>
+      ${serie.length?`<h4 style="margin:14px 0 6px;color:var(--primary)">Por mes</h4>
             <svg class="bar-chart" viewBox="0 0 100 110" preserveAspectRatio="none">${bars}</svg>
-            <div class="bar-chart-labels">${labels}</div>`:''}
+            <div class="bar-chart-labels">${labels}</div>
+            <div class="bar-chart-years">${labelsAnio}</div>`:''}
           ${top.length?`<h4 style="margin:14px 0 6px;color:var(--primary)">Servicios</h4><div class="rank-list">${servicios}</div>`:''}
         </div>`
       });
