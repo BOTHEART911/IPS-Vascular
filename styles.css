@@ -143,6 +143,16 @@ textarea { resize:vertical; min-height:80px; }
 .app-version { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); font-size:0.68rem; color:var(--text-muted); opacity:0.6; }
 .install-card { text-align:center; }
 
+/* Banner de copyright (inicio / login) — pequeño y centrado */
+img.brand[alt="Banner"] {
+  display: block;
+  width: 150px;
+  max-width: 55%;
+  height: auto;
+  margin: 18px auto 4px;
+  opacity: 0.9;
+}
+
 /* ---------- Welcome bar ---------- */
 .welcome-bar { background:linear-gradient(135deg,var(--primary),var(--primary-2)); color:#fff; border-radius:var(--r-lg); padding:18px 20px; margin:16px 0; display:flex; align-items:center; gap:14px; box-shadow:var(--sh-md); position:relative; overflow:hidden; }
 .welcome-bar::after { content:''; position:absolute; top:-40%; right:-10%; width:200px; height:200px; background:radial-gradient(circle,var(--accent-light) 0%,transparent 70%); opacity:0.22; pointer-events:none; }
