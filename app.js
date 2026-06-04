@@ -370,6 +370,25 @@ const Solicitudes = {
     });
   },
 
+   // Eliminar sesión
+   
+   async eliminarSesion(){
+    const ok=await confirmar(
+      'Eliminar sesión',
+      'Esto cerrará la sesión de WhatsApp del bot y eliminará el despliegue actual.<br>Tendrás que generar un nuevo <b>código QR</b> y escanearlo para reconectarlo.<br><br>¿Deseas continuar?',
+      'Sí, eliminar sesión'
+    );
+    if(!ok) return;
+    startLoading();
+    try{
+      const r=await apiPost('botEliminarSesion',withUser({}));
+      stopLoading();
+      if(r.ok) alertOk('Sesión eliminada','El bot se desconectó. Genera un nuevo QR para volver a vincular WhatsApp.');
+      else alertWarn('Aviso','No se pudo confirmar la eliminación. Verifica el estado del bot.');
+      setTimeout(()=>this.refrescarEstado(),2000);
+    }catch(e){ stopLoading(); alertErr('Error',e.message); }
+  },
+
   setupListeners(){
     $$('#sol-chips-estado .chip').forEach(c=>c.addEventListener('click',()=>{
       $$('#sol-chips-estado .chip').forEach(x=>x.classList.remove('is-active'));
@@ -538,6 +557,7 @@ const Bot = {
           <button class="bot-action" id="bot-reboot"><span class="bot-action__icon">🔄</span>Reiniciar</button>
           <button class="bot-action" id="bot-mute"><span class="bot-action__icon">🔇</span><span id="bot-mute-lbl">Silenciar</span></button>
         </div>
+        <button class="bot-action" id="bot-logout" style="width:100%;margin-top:10px;flex-direction:row;gap:10px;border-color:rgba(220,38,38,.30);color:#b91c1c"><span class="bot-action__icon">🗑️</span>Eliminar sesión</button>
       </div>
 
       <div class="bot-section">
@@ -559,6 +579,7 @@ const Bot = {
     $('#bot-block').addEventListener('click',()=>this.contacto('botBloquear','Bloquear contacto'));
     $('#bot-unblock').addEventListener('click',()=>this.contacto('botDesbloquear','Desbloquear contacto'));
     $('#bot-clear').addEventListener('click',()=>this.contacto('botLimpiar','Limpiar conversación'));
+    $('#bot-logout').addEventListener('click',()=>this.eliminarSesion());
   },
 
   async refrescarEstado(){
