@@ -589,7 +589,7 @@ const Bot = {
 async mostrarQR(){
     const boxQR=$('#bot-qr-box');
     boxQR.innerHTML='<p class="muted">Generando código QR… (si el bot estaba apagado puede tardar unos segundos)</p>';
-    const panelUrl='https://app.builderbot.cloud/project/'+ '85c2e4d1-278c-45a8-af29-03b6cb3b32ac' +'/deploy/qr/';
+    const panelUrl='https://link.bbot.site/85c2e4d1-278c-45a8-af29-03b6cb3b32ac';
     try{
       const r=await apiGet('botQR');
       const qr=r && r.qr ? String(r.qr) : '';
