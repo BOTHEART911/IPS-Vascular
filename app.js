@@ -588,26 +588,56 @@ const Bot = {
 
 async mostrarQR(){
     const boxQR=$('#bot-qr-box');
-    boxQR.innerHTML='<p class="muted">Cargando código QR…</p>';
-    // Enlace público del QR (marca blanca). El projectId NO es secreto: es el mismo enlace
-    // que se comparte con el cliente. Se intenta traer del backend (config) y, si no llega, respaldo.
-    const FALLBACK='https://link.bbot.site/85c2e4d1-278c-45a8-af29-03b6cb3b32ac';
-    let url=FALLBACK;
+    boxQR.innerHTML='<p class="muted">Verificando estado del bot…</p>';
+
+    // Enlace público del visor (config-driven, con respaldo)
+    let url='https://link.bbot.site/85c2e4d1-278c-45a8-af29-03b6cb3b32ac';
+    try{ const r=await apiGet('botQR'); if(r){ if(r.url) url=r.url; else if(r.projectId) url='https://link.bbot.site/'+r.projectId; } }catch(e){}
+
+    // 1) ¿Ya está conectado? Entonces no hace falta QR.
     try{
-      const r=await apiGet('botQR');
-      if(r){
-        if(r.url) url=r.url;
-        else if(r.projectId) url='https://link.bbot.site/'+r.projectId;
-        else if(r.qr && /^https?:\/\//.test(r.qr)) url=r.qr;
+      const est=await apiGet('botEstado');
+      if(String(est.status||'').toUpperCase()==='ONLINE'){
+        boxQR.innerHTML='<p class="muted">✅ Tu bot ya está conectado. No necesitas escanear ningún QR.</p>';
+        this.refrescarEstado(); return;
       }
-    }catch(e){ /* usamos el fallback */ }
+    }catch(e){}
+
+    // 2) Iniciar una sesión de QR fresca (equivale a abrir la página de QR de BuilderBot).
+    boxQR.innerHTML='<p class="muted">⏳ Preparando la conexión… puede tardar 1–2 minutos. No cierres esta pantalla.</p>';
+    try{ await apiPost('botGenerarQR', withUser({})); }catch(e){}
+
+    // 3) Esperar READY_TO_SCAN y entonces mostrar el QR embebido.
+    let intentos=0;
+    const poll=async()=>{
+      intentos++;
+      let st='UNKNOWN';
+      try{ const e2=await apiGet('botEstado'); st=String(e2.status||'UNKNOWN').toUpperCase(); }catch(e){}
+      this.refrescarEstado();
+      const box=$('#bot-qr-box');
+      if(st==='READY_TO_SCAN'){ this._pintarIframeQR(url); return; }
+      if(st==='ONLINE'){ if(box) box.innerHTML='<p class="muted">✅ Tu bot se conectó correctamente.</p>'; return; }
+      if(box) box.innerHTML=`<p class="muted">⏳ Preparando la conexión… (${intentos*5}s). No cierres esta pantalla.</p>`;
+      if(intentos>=30){ this._pintarIframeQR(url); return; } // ~150s: lo mostramos igual
+      setTimeout(poll, 5000);
+    };
+    setTimeout(poll, 5000);
+  },
+
+  _pintarIframeQR(url){
+    const boxQR=$('#bot-qr-box'); if(!boxQR) return;
+    const src=url+(url.indexOf('?')<0?'?':'&')+'t='+Date.now();
     boxQR.innerHTML=`
       <div class="bot-qr-frame">
-        <iframe src="${url}" title="Código QR de WhatsApp" loading="lazy"
-                referrerpolicy="no-referrer" allow="camera; clipboard-read; clipboard-write"></iframe>
+        <iframe src="${src}" title="Código QR de WhatsApp" loading="lazy" referrerpolicy="no-referrer"></iframe>
       </div>
-      <p class="muted">Escanéalo desde WhatsApp → <b>Dispositivos vinculados</b>. El código se actualiza solo.</p>
-      <a class="btn btn-ghost btn-sm" href="${url}" target="_blank" rel="noopener">🔗 Abrir el QR en pantalla completa</a>`;
+      <p class="muted">Escanéalo desde WhatsApp → <b>Dispositivos vinculados</b>. El código caduca a los pocos minutos.</p>
+      <div class="bot-btn-grid">
+        <button class="bot-action" id="bot-qr-regen"><span class="bot-action__icon">🔄</span>Regenerar QR</button>
+        <a class="bot-action" href="${url}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><span class="bot-action__icon">🔗</span>Abrir en pestaña</a>
+      </div>
+      <p class="muted" style="font-size:0.74rem;margin-top:8px">Si aparece <b>"Ups Error!"</b>, la sesión del QR caducó: toca <b>Regenerar QR</b>.</p>`;
+    $('#bot-qr-regen')?.addEventListener('click',()=>this.mostrarQR());
   },
 
   async reiniciar(){
