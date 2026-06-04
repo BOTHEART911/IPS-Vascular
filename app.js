@@ -432,8 +432,16 @@ const Profesionales = {
         <span class="estado-row__qty">${v}</span></div>`; }).join('');
       const serie=d.serieMes||[]; const maxM=Math.max(...serie.map(x=>x.total),1); const bw=serie.length?100/serie.length:0;
       const bars=serie.map((x,i)=>{const h=(x.total/maxM)*100; return `<g class="bc-bar"><rect x="${i*bw+bw*0.15}" y="${100-h}" width="${bw*0.7}" height="${h}" rx="2"/><title>${x.anio?String(x.mes).slice(0,3)+' '+x.anio:x.mes}: ${x.total}</title></g>`;}).join('');
-      const labels=serie.map((x,i)=>{ const prev=serie[i-1]; const nuevoAnio=x.anio&&(!prev||prev.anio!==x.anio);
-        return `<div class="bc-lbl-cell"><span class="bc-lbl-mes">${String(x.mes).slice(0,3)}</span>${x.anio?`<span class="bc-lbl-anio ${nuevoAnio?'is-new':''}">'${String(x.anio).slice(-2)}</span>`:''}</div>`; }).join('');
+      const labels=serie.map(x=>
+        `<div class="bc-lbl-cell"><span class="bc-lbl-mes">${String(x.mes).slice(0,3)}</span></div>`
+      ).join('');
+      // Años CONDENSADOS: un rótulo por año, ancho proporcional a sus meses
+      const gruposP=[];
+      serie.forEach(x=>{ const a=x.anio||''; const last=gruposP[gruposP.length-1];
+        if(last && last.anio===a) last.count++; else gruposP.push({anio:a,count:1}); });
+      const labelsAnio=gruposP.map(g=>
+        `<div class="bc-anio-group" style="flex:${g.count} 1 0">${g.anio?`<span class="bc-anio-pill">'${String(g.anio).slice(-2)}</span>`:''}</div>`
+      ).join('');
       const top=d.topServicios||[]; const maxS=Math.max(...top.map(x=>x.total),1);
       const servicios=top.map(x=>`<div class="rank-row"><div style="min-width:0"><div class="rank-row__name">${escapeHtml(x.nombre)}</div>
         <div class="rank-row__bar"><div class="rank-row__fill" style="width:${(x.total/maxS*100).toFixed(1)}%"></div></div></div><div class="rank-row__qty">${x.total}</div></div>`).join('');
