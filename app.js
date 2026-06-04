@@ -589,18 +589,27 @@ const Bot = {
 async mostrarQR(){
     const boxQR=$('#bot-qr-box');
     boxQR.innerHTML='<p class="muted">Generando código QR… (si el bot estaba apagado puede tardar unos segundos)</p>';
+    const panelUrl='https://app.builderbot.cloud/project/'+ '85c2e4d1-278c-45a8-af29-03b6cb3b32ac' +'/deploy/qr/';
     try{
       const r=await apiGet('botQR');
       const qr=r && r.qr ? String(r.qr) : '';
-      if(!qr){ boxQR.innerHTML=`<p class="muted">${escapeHtml((r&&r.error)||'No se recibió el QR. Toca de nuevo en unos segundos.')}</p>
-        <button class="bot-action" id="bot-qr-regen" style="width:100%;flex-direction:row;gap:10px"><span class="bot-action__icon">🔄</span>Reintentar</button>`;
-        $('#bot-qr-regen')?.addEventListener('click',()=>this.mostrarQR()); return; }
+      if(!qr){
+        boxQR.innerHTML=`<p class="muted">${escapeHtml((r&&r.error)||'No se recibió el QR. Toca de nuevo en unos segundos.')}</p>
+          <div class="bot-btn-grid">
+            <button class="bot-action" id="bot-qr-regen"><span class="bot-action__icon">🔄</span>Reintentar</button>
+            <a class="bot-action" href="${panelUrl}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><span class="bot-action__icon">🔗</span>Abrir en pestaña</a>
+          </div>`;
+        $('#bot-qr-regen')?.addEventListener('click',()=>this.mostrarQR()); return;
+      }
       const src = qr.indexOf('data:')===0 ? qr : (/^https?:\/\//.test(qr) ? qr : 'data:image/png;base64,'+qr);
       boxQR.innerHTML=`
         <img class="bot-qr-img" src="${src}" alt="Código QR de WhatsApp"
              onerror="this.replaceWith(document.createTextNode('No se pudo mostrar el QR. Toca Regenerar.'))"/>
         <p class="muted">Escanéalo desde WhatsApp → <b>Dispositivos vinculados</b>. El código se renueva cada cierto tiempo.</p>
-        <button class="bot-action" id="bot-qr-regen" style="width:100%;flex-direction:row;gap:10px"><span class="bot-action__icon">🔄</span>Regenerar QR</button>`;
+        <div class="bot-btn-grid">
+          <button class="bot-action" id="bot-qr-regen"><span class="bot-action__icon">🔄</span>Regenerar QR</button>
+          <a class="bot-action" href="${panelUrl}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><span class="bot-action__icon">🔗</span>Abrir en pestaña</a>
+        </div>`;
       $('#bot-qr-regen')?.addEventListener('click',()=>this.mostrarQR());
     }catch(e){ boxQR.innerHTML=`<p class="muted">Error al generar QR: ${escapeHtml(e.message)}</p>`; }
   },
@@ -662,10 +671,16 @@ const Config = {
     const cont=$('#cfg-content');
     cont.innerHTML=`
       ${this.seccion('usuarios','👥 Usuarios', this.renderUsuarios())}
-    ${this.seccion('bot','🤖 Conexión BuilderBot', `
-        <label>Endpoint base</label><input id="cfg-BB_ENDPOINT_BASE" value="${v('BB_ENDPOINT_BASE')}"/>
-        <label>Bot ID (API v2)</label><input id="cfg-BB_BOT_ID" value="${v('BB_BOT_ID')}"/>
-        <label>Project ID (API v1 manager)</label><input id="cfg-BB_PROJECT_ID" value="${v('BB_PROJECT_ID')}"/>
+   ${this.seccion('bot','🤖 Conexión BuilderBot', `
+        <label>Endpoint base</label>
+        <div class="cfg-secret-row"><input id="cfg-BB_ENDPOINT_BASE" type="password" value="${v('BB_ENDPOINT_BASE')}"/>
+          <button type="button" class="cfg-secret-toggle" data-toggle="cfg-BB_ENDPOINT_BASE">👁</button></div>
+        <label>Bot ID (API v2)</label>
+        <div class="cfg-secret-row"><input id="cfg-BB_BOT_ID" type="password" value="${v('BB_BOT_ID')}"/>
+          <button type="button" class="cfg-secret-toggle" data-toggle="cfg-BB_BOT_ID">👁</button></div>
+        <label>Project ID (API v1 manager)</label>
+        <div class="cfg-secret-row"><input id="cfg-BB_PROJECT_ID" type="password" value="${v('BB_PROJECT_ID')}"/>
+          <button type="button" class="cfg-secret-toggle" data-toggle="cfg-BB_PROJECT_ID">👁</button></div>
         <label>API Manager · general (bbc-…) — estado y QR</label>
         <div class="cfg-secret-row"><input id="cfg-BB_MANAGER_API" type="password" value="${v('BB_MANAGER_API')}"/>
           <button type="button" class="cfg-secret-toggle" data-toggle="cfg-BB_MANAGER_API">👁</button></div>
