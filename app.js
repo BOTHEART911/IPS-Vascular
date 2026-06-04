@@ -822,10 +822,10 @@ function setupInstall(){
     }
   });
   ['btn-cont-web','btn-cont-web-ios'].forEach(id=>$('#'+id)?.addEventListener('click',iniciarSesion));
-
+}
   $('#btn-install')?.addEventListener('click',async()=>{ if(!deferredPrompt) return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; });
   ['btn-cont-web','btn-cont-web-ios'].forEach(id=>$('#'+id)?.addEventListener('click',iniciarSesion));
-}
+
 async function setupPWA(){
   if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('./sw.js'); }catch(e){} }
   if(isStandalone()) iniciarSesion();
