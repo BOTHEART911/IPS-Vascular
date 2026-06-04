@@ -171,16 +171,26 @@ function renderEstados(d){
 function renderBarChart(d){
   const serie=d.serieMes||[]; if(!serie.length) return '';
   const max=Math.max(...serie.map(x=>x.total),1);
-  const bw=100/serie.length; const best=serie.reduce((a,b)=>b.total>a.total?b:a,serie[0]);
-  const bars=serie.map((x,i)=>{ const h=(x.total/max)*100; const isb=x.mes===best.mes;
-    return `<g class="bc-bar ${isb?'bc-bar--best':''}"><rect x="${i*bw+bw*0.15}" y="${100-h}" width="${bw*0.7}" height="${h}" rx="2"/><title>${x.mes}: ${x.total}</title></g>`; }).join('');
-  const labels=serie.map((x,i)=>`<text x="${i*bw+bw/2}" y="14" text-anchor="middle" class="bc-lbl">${x.mes.slice(0,3)}</text>`).join('');
+  const bw=100/serie.length;
+  const best=serie.reduce((a,b)=>b.total>a.total?b:a,serie[0]);
+  const bars=serie.map((x,i)=>{ const h=(x.total/max)*100; const isb=(x.mes===best.mes && x.anio===best.anio);
+    return `<g class="bc-bar ${isb?'bc-bar--best':''}"><rect x="${i*bw+bw*0.15}" y="${100-h}" width="${bw*0.7}" height="${h}" rx="2"/><title>${etiquetaMes(x)}: ${x.total}</title></g>`; }).join('');
+  const labels=serie.map((x,i)=>{
+    const prev=serie[i-1];
+    const nuevoAnio = x.anio && (!prev || prev.anio!==x.anio);
+    return `<div class="bc-lbl-cell">
+      <span class="bc-lbl-mes">${String(x.mes).slice(0,3)}</span>
+      ${x.anio?`<span class="bc-lbl-anio ${nuevoAnio?'is-new':''}">'${String(x.anio).slice(-2)}</span>`:''}
+    </div>`;
+  }).join('');
   return `<div class="dash-section"><h3 class="dash-section__title">📈 Solicitudes por mes</h3>
     <div class="bar-chart-wrap">
       <svg class="bar-chart" viewBox="0 0 100 110" preserveAspectRatio="none">${bars}</svg>
-      <svg class="bar-chart-labels" viewBox="0 0 100 18" preserveAspectRatio="none">${labels}</svg>
+      <div class="bar-chart-labels">${labels}</div>
     </div></div>`;
 }
+function etiquetaMes(x){ return x.anio ? `${String(x.mes).slice(0,3)} ${x.anio}` : String(x.mes); }
+
 function renderTopServicios(d){
   const top=d.topServicios||[]; if(!top.length) return '';
   const max=Math.max(...top.map(x=>x.total),1);
@@ -405,8 +415,9 @@ const Profesionales = {
         <div class="estado-row__bar"><div class="estado-row__fill fill-${e.toLowerCase()}" style="width:${(v/maxE*100).toFixed(1)}%"></div></div>
         <span class="estado-row__qty">${v}</span></div>`; }).join('');
       const serie=d.serieMes||[]; const maxM=Math.max(...serie.map(x=>x.total),1); const bw=serie.length?100/serie.length:0;
-      const bars=serie.map((x,i)=>{const h=(x.total/maxM)*100; return `<g class="bc-bar"><rect x="${i*bw+bw*0.15}" y="${100-h}" width="${bw*0.7}" height="${h}" rx="2"/><title>${x.mes}: ${x.total}</title></g>`;}).join('');
-      const labels=serie.map((x,i)=>`<text x="${i*bw+bw/2}" y="14" text-anchor="middle" class="bc-lbl">${x.mes.slice(0,3)}</text>`).join('');
+      const bars=serie.map((x,i)=>{const h=(x.total/maxM)*100; return `<g class="bc-bar"><rect x="${i*bw+bw*0.15}" y="${100-h}" width="${bw*0.7}" height="${h}" rx="2"/><title>${x.anio?String(x.mes).slice(0,3)+' '+x.anio:x.mes}: ${x.total}</title></g>`;}).join('');
+      const labels=serie.map((x,i)=>{ const prev=serie[i-1]; const nuevoAnio=x.anio&&(!prev||prev.anio!==x.anio);
+        return `<div class="bc-lbl-cell"><span class="bc-lbl-mes">${String(x.mes).slice(0,3)}</span>${x.anio?`<span class="bc-lbl-anio ${nuevoAnio?'is-new':''}">'${String(x.anio).slice(-2)}</span>`:''}</div>`; }).join('');
       const top=d.topServicios||[]; const maxS=Math.max(...top.map(x=>x.total),1);
       const servicios=top.map(x=>`<div class="rank-row"><div style="min-width:0"><div class="rank-row__name">${escapeHtml(x.nombre)}</div>
         <div class="rank-row__bar"><div class="rank-row__fill" style="width:${(x.total/maxS*100).toFixed(1)}%"></div></div></div><div class="rank-row__qty">${x.total}</div></div>`).join('');
@@ -419,9 +430,9 @@ const Profesionales = {
             <div class="prof-stats__kpi"><div class="prof-stats__kpi-val">${d.porEstado.REALIZADA||0}</div><div class="prof-stats__kpi-lbl">Realizadas</div></div>
           </div>
           <h4 style="margin:6px 0 8px;color:var(--primary)">Por estado</h4><div class="estado-bars">${estados}</div>
-          ${serie.length?`<h4 style="margin:14px 0 6px;color:var(--primary)">Por mes</h4>
+       ${serie.length?`<h4 style="margin:14px 0 6px;color:var(--primary)">Por mes</h4>
             <svg class="bar-chart" viewBox="0 0 100 110" preserveAspectRatio="none">${bars}</svg>
-            <svg class="bar-chart-labels" viewBox="0 0 100 18" preserveAspectRatio="none">${labels}</svg>`:''}
+            <div class="bar-chart-labels">${labels}</div>`:''}
           ${top.length?`<h4 style="margin:14px 0 6px;color:var(--primary)">Servicios</h4><div class="rank-list">${servicios}</div>`:''}
         </div>`
       });
