@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#0e6ba8" />
+  <meta name="description" content="Gestión de citas — IPS Vascular" />
+  <title>IPS Vascular</title>
+
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" type="image/png" href="https://res.cloudinary.com/dqqeavica/image/upload/v1780574926/medicos_zgjsf9.png" />
+  <link rel="apple-touch-icon" href="https://res.cloudinary.com/dqqeavica/image/upload/v1780574926/medicos_zgjsf9.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="IPS Vascular" />
+  <meta name="mobile-web-app-capable" content="yes" />
+
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+</head>
+<body>
+
+  <!-- LOADER -->
+  <div id="loader" class="loader hidden">
+    <div class="spinner"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  </div>
+
+  <!-- ============================================================ INSTALAR -->
+  <section id="view-instalar" class="view">
+    <div class="login-wrap">
+      <div class="login-card install-card">
+        <img src="https://res.cloudinary.com/dqqeavica/image/upload/v1780574926/medicos_zgjsf9.png" alt="IPS Vascular" class="brand-logo" />
+        <h1 class="login-title">IPS Vascular</h1>
+        <p class="login-sub">Instala la aplicación para acceder más rápido.</p>
+        <div id="install-android" class="hidden mt-md">
+          <button id="btn-install" class="btn btn-primary btn-lg btn-block" style="display:none;">📲 Instalar aplicación</button>
+          <button id="btn-cont-web" class="btn btn-ghost btn-block mt-sm">🌐 Continuar en el navegador</button>
+        </div>
+        <div id="install-ios" class="hidden mt-md">
+          <ol style="text-align:left; font-size:0.9rem; line-height:1.7; color:var(--text-soft); padding-left:20px;">
+            <li>Pulsa <strong>Compartir</strong> en Safari.</li>
+            <li>Selecciona <strong>"Añadir a pantalla de inicio"</strong>.</li>
+            <li>Pulsa <strong>"Añadir"</strong>.</li>
+          </ol>
+          <button id="btn-cont-web-ios" class="btn btn-ghost btn-block mt-md">🌐 Continuar en el navegador</button>
+        </div>
+        <p class="app-version" id="app-version-number">—</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ LOGIN -->
+  <section id="view-login" class="view">
+    <div class="login-wrap">
+      <div class="login-card">
+        <img src="https://res.cloudinary.com/dqqeavica/image/upload/v1780574926/medicos_zgjsf9.png" alt="IPS Vascular" class="login-logo" />
+        <h1 class="login-title">Bienvenido</h1>
+        <p class="login-sub">IPS Vascular — Ingresa tu PIN</p>
+        <div class="pin-pad">
+          <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+        </div>
+        <div class="pin-keypad">
+          <button class="pin-key" data-key="1">1</button>
+          <button class="pin-key" data-key="2">2</button>
+          <button class="pin-key" data-key="3">3</button>
+          <button class="pin-key" data-key="4">4</button>
+          <button class="pin-key" data-key="5">5</button>
+          <button class="pin-key" data-key="6">6</button>
+          <button class="pin-key" data-key="7">7</button>
+          <button class="pin-key" data-key="8">8</button>
+          <button class="pin-key" data-key="9">9</button>
+          <button class="pin-key action" data-key="clear">Borrar</button>
+          <button class="pin-key" data-key="0">0</button>
+          <button class="pin-key action" data-key="back">⌫</button>
+        </div>
+        <p class="app-version" id="app-version-number-2">—</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ INICIO (DASHBOARD) -->
+  <section id="view-inicio" class="view">
+    <div class="container">
+      <div class="welcome-bar">
+        <div class="welcome-bar__avatar" id="welcome-avatar">?</div>
+        <div class="welcome-bar__info">
+          <div class="welcome-bar__hello">Bienvenido</div>
+          <div class="welcome-bar__name" id="welcome-name">—</div>
+          <span class="welcome-bar__rol" id="welcome-rol">—</span>
+        </div>
+        <button class="welcome-bar__logout" id="btn-logout" title="Cerrar sesión">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div id="dash-content" class="dash-content"></div>
+
+      <h2 style="margin-top:24px; margin-bottom:4px;">Módulos</h2>
+      <p class="muted">Selecciona dónde quieres trabajar</p>
+      <div class="menu-grid" id="menu-grid"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ SOLICITUDES -->
+  <section id="view-solicitudes" class="view">
+    <header class="app-header">
+      <button class="app-header__back" data-go="inicio" title="Volver">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <h1 class="app-header__title">Solicitudes</h1>
+      <button id="sol-search-btn" class="app-header__icon" title="Buscar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+    </header>
+    <div class="container">
+      <div id="sol-search-bar" class="search-bar hidden">
+        <input id="sol-search-input" type="search" placeholder="Buscar por paciente, documento o servicio…" autocomplete="off" />
+      </div>
+      <div class="chips" id="sol-chips-estado">
+        <button class="chip is-active" data-estado="TODOS">Todas</button>
+        <button class="chip" data-estado="PENDIENTE">Pendientes</button>
+        <button class="chip" data-estado="ASIGNADA">Asignadas</button>
+        <button class="chip" data-estado="CONFIRMADA">Confirmadas</button>
+        <button class="chip" data-estado="REALIZADA">Realizadas</button>
+        <button class="chip" data-estado="DESCARTADA">Descartadas</button>
+        <button class="chip" data-estado="CANCELADA">Canceladas</button>
+      </div>
+      <p class="muted" id="sol-subtitle" style="margin-top:6px;">—</p>
+      <div id="sol-content" class="sol-list"></div>
+    </div>
+    <button id="sol-fab" class="fab" title="Nueva solicitud">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </section>
+
+  <!-- ============================================================ PROFESIONALES -->
+  <section id="view-profesionales" class="view">
+    <header class="app-header">
+      <button class="app-header__back" data-go="inicio" title="Volver">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <h1 class="app-header__title">Profesionales</h1>
+    </header>
+    <div class="container">
+      <p class="muted" style="margin-top:8px;">Toca un profesional para ver su tablero estadístico</p>
+      <div id="prof-content" class="prof-list"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ PACIENTES -->
+  <section id="view-pacientes" class="view">
+    <header class="app-header">
+      <button class="app-header__back" data-go="inicio" title="Volver">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <h1 class="app-header__title">Pacientes</h1>
+      <button id="pac-search-btn" class="app-header__icon" title="Buscar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+    </header>
+    <div class="container">
+      <div id="pac-search-bar" class="search-bar hidden">
+        <input id="pac-search-input" type="search" placeholder="Buscar por nombre o documento…" autocomplete="off" />
+      </div>
+      <p class="muted" id="pac-subtitle" style="margin-top:8px;">—</p>
+      <div id="pac-content" class="pac-list"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ BOT -->
+  <section id="view-bot" class="view">
+    <header class="app-header">
+      <button class="app-header__back" data-go="inicio" title="Volver">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <h1 class="app-header__title">Mi Bot de WhatsApp</h1>
+      <button id="bot-refresh" class="app-header__icon" title="Actualizar estado">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </button>
+    </header>
+    <div class="container">
+      <div id="bot-content"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ CONFIGURACIÓN (solo DEV) -->
+  <section id="view-configuracion" class="view">
+    <header class="app-header">
+      <button class="app-header__back" data-go="inicio" title="Volver">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <h1 class="app-header__title">Configuración</h1>
+    </header>
+    <div class="container">
+      <p class="muted" style="margin-top:8px;">Solo DESARROLLADOR. Endpoints, credenciales, plantilla de WhatsApp y usuarios.</p>
+      <div id="cfg-content"></div>
+    </div>
+  </section>
+
+  <!-- SCRIPTS -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
