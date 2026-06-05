@@ -531,7 +531,7 @@ const Bot = {
       <div class="bot-section">
         <h3 class="bot-section__title">📱 Conectar WhatsApp</h3>
         <p class="muted">Si tu bot está desconectado, genera el código QR y escanéalo desde WhatsApp en tu teléfono.</p>
-        <button id="bot-qr-btn" class="btn btn-primary btn-block mt-sm">Mostrar código QR</button>
+        <button id="bot-qr-btn" class="btn btn-primary btn-block mt-sm">⚡ Inicializar conexión</button>
         <div id="bot-qr-box" style="text-align:center"></div>
       </div>
 
@@ -583,19 +583,23 @@ const Bot = {
 
 async mostrarQR(){
     const boxQR=$('#bot-qr-box');
-    boxQR.innerHTML='<p class="muted">Generando código QR… (si el bot estaba apagado puede tardar unos segundos)</p>';
-    const panelUrl='https://link.bbot.site/85c2e4d1-278c-45a8-af29-03b6cb3b32ac';
+    const btn=$('#bot-qr-btn');
+    if(btn){ btn.disabled=true; btn.textContent='⏳ Conectando…'; }
+    boxQR.innerHTML='<p class="muted">Preparando la conexión… (si el bot estaba apagado puede tardar unos segundos)</p>';
+    const panelUrl=this.panelUrl;
     try{
       const r=await apiGet('botQR');
       const qr=r && r.qr ? String(r.qr) : '';
+
+      // Paso 1: BuilderBot acaba de crear el deploy y aún no entrega el QR.
+      // No es un error: el botón pasa a "Generar QR" para el segundo toque.
       if(!qr){
-        boxQR.innerHTML=`<p class="muted">${escapeHtml((r&&r.error)||'No se recibió el QR. Toca de nuevo en unos segundos.')}</p>
-          <div class="bot-btn-grid">
-            <button class="bot-action" id="bot-qr-regen"><span class="bot-action__icon">🔄</span>Reintentar</button>
-            <a class="bot-action" href="${panelUrl}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><span class="bot-action__icon">🔗</span>Abrir en pestaña</a>
-          </div>`;
-        $('#bot-qr-regen')?.addEventListener('click',()=>this.mostrarQR()); return;
+        if(btn){ btn.disabled=false; btn.textContent='📲 Generar QR'; }
+        boxQR.innerHTML=`<p class="muted">${escapeHtml((r&&r.error)||'Conexión inicializada. Toca <b>Generar QR</b> para ver el código.')}</p>`;
+        return;
       }
+
+      // Paso 2: ya tenemos QR.
       const src = qr.indexOf('data:')===0 ? qr : (/^https?:\/\//.test(qr) ? qr : 'data:image/png;base64,'+qr);
       boxQR.innerHTML=`
         <img class="bot-qr-img" src="${src}" alt="Código QR de WhatsApp"
@@ -605,9 +609,13 @@ async mostrarQR(){
           <button class="bot-action" id="bot-qr-regen"><span class="bot-action__icon">🔄</span>Regenerar QR</button>
           <a class="bot-action" href="${panelUrl}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><span class="bot-action__icon">🔗</span>Abrir en pestaña</a>
         </div>`;
+      if(btn){ btn.disabled=false; btn.textContent='📲 Generar QR'; }
       $('#bot-qr-regen')?.addEventListener('click',()=>this.mostrarQR());
       this.iniciarPollingQR();
-    }catch(e){ boxQR.innerHTML=`<p class="muted">Error al generar QR: ${escapeHtml(e.message)}</p>`; }
+    }catch(e){
+      if(btn){ btn.disabled=false; btn.textContent='⚡ Inicializar conexión'; }
+      boxQR.innerHTML=`<p class="muted">Error al generar QR: ${escapeHtml(e.message)}</p>`;
+    }
   },
 
   /* Cada 60s consulta el estado SIN regenerar el QR. Si el bot ya está ONLINE,
