@@ -933,7 +933,7 @@ async function checkVersion(){
     if(!sv) return;
     if(!APP_VERSION_LOADED){
       APP_VERSION_LOADED=sv;
-      ['#app-version-number','#app-version-number-2','#app-version-number-3'].forEach(s=>{ const el=$(s); if(el) el.textContent='Versión '+sv; });
+      ['#app-version-number','#app-version-number-inicio'].forEach(s=>{ const el=$(s); if(el) el.textContent='Versión '+sv; });
       return;
     }
     if(sv!==APP_VERSION_LOADED){
