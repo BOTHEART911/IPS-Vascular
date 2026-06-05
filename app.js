@@ -822,9 +822,44 @@ function setupNav(){
 
 /* PWA install */
 let deferredPrompt=null;
-function isStandalone(){ return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true; }
+function isStandalone(){ return window.matchMedia('(display-mode: standalone)').matches || window.matchMedia('(display-mode: installed)').matches || window.navigator.standalone===true; }
 function isIOS(){ return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream; }
-window.addEventListener('beforeinstallprompt',(e)=>{ e.preventDefault(); deferredPrompt=e; const b=$('#btn-install'); if(b) b.style.display=''; });
+function isMarkedInstalled(){ try{ return localStorage.getItem('pwaInstalledFlag')==='1'; }catch(_){ return false; } }
+function markInstalled(){ try{ localStorage.setItem('pwaInstalledFlag','1'); }catch(_){} }
+function clearInstalledMark(){ try{ localStorage.removeItem('pwaInstalledFlag'); }catch(_){} }
+
+/* Detecta si la app ya está instalada (standalone, app relacionada o flag). */
+async function detectInstalled(){
+  if(isStandalone()) return true;
+  if(typeof navigator.getInstalledRelatedApps==='function'){
+    try{
+      const apps=await navigator.getInstalledRelatedApps();
+      const found=apps.some(a=>a.platform==='webapp' && typeof a.url==='string' && /manifest\.webmanifest$/.test(a.url));
+      if(found){ markInstalled(); return true; }
+      else { clearInstalledMark(); }
+    }catch(_){}
+  }
+  return isMarkedInstalled();
+}
+
+/* Muestra el contenedor de instalación correcto. El botón "Instalar" solo
+   aparece cuando el navegador ya disparó beforeinstallprompt. */
+function updateInstallSection(){
+  const installed = isMarkedInstalled() || isStandalone();
+  $('#install-android')?.classList.add('hidden');
+  $('#install-ios')?.classList.add('hidden');
+  if(installed) return;
+  if(isIOS()){
+    $('#install-ios')?.classList.remove('hidden');
+  } else {
+    $('#install-android')?.classList.remove('hidden');
+    const btn=$('#btn-install');
+    if(btn) btn.style.display = deferredPrompt ? '' : 'none';
+  }
+}
+
+window.addEventListener('beforeinstallprompt',(e)=>{ e.preventDefault(); deferredPrompt=e; updateInstallSection(); });
+window.addEventListener('appinstalled',()=>{ markInstalled(); deferredPrompt=null; updateInstallSection(); });
 function setupInstall(){
   $('#btn-install')?.addEventListener('click',async()=>{
     // Flujo iOS: instrucciones con GIF (idéntico a Ramírez Group)
@@ -848,8 +883,9 @@ function setupInstall(){
     const dp=deferredPrompt;
     dp.prompt();
     const choice=await dp.userChoice;
-    deferredPrompt=null;
+   deferredPrompt=null;
     if(choice.outcome==='accepted'){
+      markInstalled();
       Swal.fire({
         icon:'success',
         title:'¡App instalándose!',
@@ -865,16 +901,18 @@ function setupInstall(){
         timer:12000,
         showConfirmButton:false
       });
-    } else {
+} else {
       Swal.fire({icon:'info',title:'Instalación cancelada'});
     }
+    updateInstallSection();
   });
   ['btn-cont-web','btn-cont-web-ios'].forEach(id=>$('#'+id)?.addEventListener('click',iniciarSesion));
 }
 async function setupPWA(){
   if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('./sw.js'); }catch(e){} }
-  if(isStandalone()) iniciarSesion();
-  else { showView('instalar'); $('#install-ios')?.classList.toggle('hidden',!isIOS()); $('#install-android')?.classList.toggle('hidden',isIOS()); }
+  const installed=await detectInstalled();
+  if(installed) iniciarSesion();
+  else { showView('instalar'); updateInstallSection(); }
 }
 function iniciarSesion(){
   const saved=localStorage.getItem(SESSION_KEY);
@@ -882,15 +920,53 @@ function iniciarSesion(){
   showView('login');
 }
 
-/* Versión / auto-update */
+/* Versión / auto-update (adaptado de Ramírez Group) */
+let __versionCheckInFlight=false;
 async function checkVersion(){
+  if(__versionCheckInFlight) return;
+  __versionCheckInFlight=true;
   try{
-    const r=await fetch('./version.js?t='+Date.now(),{cache:'no-store'}); if(!r.ok) return;
-    const j=await r.json(); const sv=String(j.version||'').trim(); if(!sv) return;
-    if(!APP_VERSION_LOADED){ APP_VERSION_LOADED=sv; ['#app-version-number','#app-version-number-2','#app-version-number-3'].forEach(s=>{const el=$(s); if(el) el.textContent='Versión '+sv;}); return; }
-    if(sv!==APP_VERSION_LOADED){ try{ const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); }catch(e){} location.reload(); }
-  }catch(e){}
+    const r=await fetch('./version.js?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok) return;
+    const j=await r.json();
+    const sv=String(j.version||'').trim();
+    if(!sv) return;
+    if(!APP_VERSION_LOADED){
+      APP_VERSION_LOADED=sv;
+      ['#app-version-number','#app-version-number-2','#app-version-number-3'].forEach(s=>{ const el=$(s); if(el) el.textContent='Versión '+sv; });
+      return;
+    }
+    if(sv!==APP_VERSION_LOADED){
+      try{ const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); }catch(e){}
+      location.reload();
+    }
+  }catch(e){ /* sin red: silencio */ }
+  finally{ __versionCheckInFlight=false; }
 }
+
+/* Recarga automática cuando el SW nuevo toma control (con anti-loop) */
+if('serviceWorker' in navigator){
+  let __reloadingFromSW=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(__reloadingFromSW) return;
+    const lastReload=Number(sessionStorage.getItem('__swReloadTs')||0);
+    const now=Date.now();
+    if(now-lastReload<10000) return;
+    __reloadingFromSW=true;
+    sessionStorage.setItem('__swReloadTs',String(now));
+    location.reload();
+  });
+}
+
+/* Chequeo extra cuando la pestaña vuelve a estar visible (máx 1 vez / 30s) */
+let __lastVersionCheck=Date.now();
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden) return;
+  const now=Date.now();
+  if(now-__lastVersionCheck<30000) return;
+  __lastVersionCheck=now;
+  checkVersion();
+});
 
 window.addEventListener('DOMContentLoaded',()=>{
   setupLogin();
