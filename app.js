@@ -101,7 +101,7 @@ async function loginPin(){
     snd(SONIDOS.login); stopLoading(); irAInicio();
   }catch(e){ state.pinBuffer=''; pintarPin(); stopLoading(); alertErr('Error',e.message); }
 }
-function logout(){ localStorage.removeItem(SESSION_KEY); state.user=null; state.pinBuffer=''; pintarPin(); showView('login'); }
+function logout(){ Bot.detenerPollingQR(); localStorage.removeItem(SESSION_KEY); state.user=null; state.pinBuffer=''; pintarPin(); showView('login'); }
 
 /* ============================================================
    INICIO + DASHBOARD
@@ -242,6 +242,7 @@ const Solicitudes = {
           <h4 class="sol-card__name">${escapeHtml(s.paciente)}</h4>
           <div class="sol-card__doc">${escapeHtml(s.documento)}</div>
           <div class="sol-card__serv">${escapeHtml(s.servicio)}</div>
+          ${(s.dia||s.mes||s.anio)?`<div class="sol-card__solicitud">Solicitud: ${escapeHtml(s.dia||'')} - ${escapeHtml(s.mes||'')} ${escapeHtml(s.anio||'')}</div>`:''}
         </div>
         <div class="sol-card__right">
           <span class="estado-badge badge-${cls}">${s.estado}</span>
@@ -255,8 +256,9 @@ const Solicitudes = {
 
   abrirDetalle(s){
     const cls=s.estado.toLowerCase();
-    const html=`<div class="sol-detalle">
+   const html=`<div class="sol-detalle">
       <div style="text-align:center;margin-bottom:10px;"><span class="estado-badge badge-${cls}" style="font-size:0.72rem;">${s.estado}</span></div>
+      ${(s.dia||s.mes||s.anio)?`<div class="sol-detalle__solicitud">Solicitud: ${escapeHtml(s.dia||'')} - ${escapeHtml(s.mes||'')} ${escapeHtml(s.anio||'')}</div>`:''}
       <div class="sol-detalle__row"><span>ID</span><b>${escapeHtml(s.id)}</b></div>
       <div class="sol-detalle__row"><span>Paciente</span><b>${escapeHtml(s.paciente)}</b></div>
       <div class="sol-detalle__row"><span>Documento</span><b>${escapeHtml(s.documento)}</b></div>
@@ -515,9 +517,10 @@ const Pacientes = {
    BOT (control, lenguaje simple — sin API keys)
    ============================================================ */
 const Bot = {
-  silenciado:false,
+  silenciado:false, qrPoll:null,
   async abrir(){ showView('bot'); this.render(); await this.refrescarEstado(); },
-  render(){
+ render(){
+    this.detenerPollingQR();
     $('#bot-content').innerHTML=`
       <div id="bot-status" class="bot-status bot-status--unknown">
         <div class="bot-status__icon">⏳</div>
@@ -603,8 +606,33 @@ async mostrarQR(){
           <a class="bot-action" href="${panelUrl}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><span class="bot-action__icon">🔗</span>Abrir en pestaña</a>
         </div>`;
       $('#bot-qr-regen')?.addEventListener('click',()=>this.mostrarQR());
+      this.iniciarPollingQR();
     }catch(e){ boxQR.innerHTML=`<p class="muted">Error al generar QR: ${escapeHtml(e.message)}</p>`; }
   },
+
+  /* Cada 60s consulta el estado SIN regenerar el QR. Si el bot ya está ONLINE,
+     difumina el QR y muestra el aviso de conexión. */
+  iniciarPollingQR(){
+    this.detenerPollingQR();
+    this.qrPoll=setInterval(async()=>{
+      const img=$('#bot-qr-box .bot-qr-img');
+      if(!img){ this.detenerPollingQR(); return; }   // el QR ya no está en pantalla
+      try{
+        await this.refrescarEstado();                 // repinta el indicador de arriba
+        if($('#bot-status')?.classList.contains('bot-status--online')){
+          this.detenerPollingQR();
+          img.classList.add('bot-qr-img--connected');
+          if(!$('#bot-qr-ok')){
+            const ok=document.createElement('div');
+            ok.id='bot-qr-ok'; ok.className='bot-qr-ok';
+            ok.innerHTML='🟢 <b>WhatsApp conectado</b><br><span>Ya puedes cerrar esta vista.</span>';
+            img.insertAdjacentElement('afterend', ok);
+          }
+        }
+      }catch(e){}
+    }, 60000);
+  },
+  detenerPollingQR(){ if(this.qrPoll){ clearInterval(this.qrPoll); this.qrPoll=null; } },
    
   async reiniciar(){
     const ok=await confirmar('Reiniciar bot','El bot se reiniciará. Puede tardar unos segundos en volver a conectarse. ¿Continuar?','Sí, reiniciar');
