@@ -377,3 +377,11 @@ img.brand[alt="Banner"] {
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:var(--border-strong); border-radius:4px; }
 ::-webkit-scrollbar-thumb:hover { background:var(--primary); }
+
+.app-version-line {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
