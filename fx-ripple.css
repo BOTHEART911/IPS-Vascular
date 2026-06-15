@@ -1,0 +1,43 @@
+/* ============================================================
+   fx-ripple.css — CAPA 7 · Onda al tocar / ripple (decorativa)
+   IPS Vascular · capa independiente, no edita styles.css
+   ------------------------------------------------------------
+   QUÉ HACE
+   - Estiliza la onda de tinta estilo Android que aparece donde
+     tocas botones, tarjetas, teclado PIN, chips y accesos.
+   ------------------------------------------------------------
+   INSTALAR  (en <head>, DESPUÉS de styles.css):
+   <link rel="stylesheet" href="./fx-ripple.css" />
+   ------------------------------------------------------------
+   PAREJA   : fx-ripple.js (la onda se crea ahí, vía pointerdown).
+   REVERSIBLE: borra las dos líneas (link + script) y desaparece.
+   NOTAS
+   - La onda es translúcida: se pinta encima sin tapar el texto.
+   - El recorte (overflow) solo afecta el interior; las sombras de
+     las tarjetas se pintan fuera y NO se ven afectadas.
+   - Con prefers-reduced-motion: reduce, no se dibuja onda alguna.
+   ============================================================ */
+
+/* El host se vuelve contenedor recortado solo cuando recibe su 1ª onda */
+.fx-ripple-host { position: relative; overflow: hidden; }
+
+.fx-ripple {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: scale(0);
+  opacity: 0.55;
+  background: var(--fx-ripple, rgba(14, 107, 168, .18));
+  animation: fxRipple .6s ease-out forwards;
+}
+@keyframes fxRipple {
+  to { transform: scale(1); opacity: 0; }
+}
+
+/* Onda blanca sobre superficies de color (texto blanco) */
+.btn-primary, .btn-accent, .btn-success, .fab { --fx-ripple: rgba(255, 255, 255, .5); }
+.chip.is-active { --fx-ripple: rgba(255, 255, 255, .45); }
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-ripple { display: none; }
+}
