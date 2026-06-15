@@ -1,0 +1,84 @@
+/* ============================================================
+   fx-skeletons.css — CAPA 5 · Esqueletos de carga (funcional)
+   IPS Vascular · capa independiente, no edita styles.css
+   ------------------------------------------------------------
+   QUÉ HACE
+   - Define las siluetas grises con brillo que sustituyen al
+     "girador" mientras cargan SOLO las listas (Solicitudes,
+     Pacientes, Profesionales). No toca el girador global de
+     guardar / cobrar / login.
+   ------------------------------------------------------------
+   INSTALAR  (en <head>, DESPUÉS de styles.css):
+   <link rel="stylesheet" href="./fx-skeletons.css" />
+   ------------------------------------------------------------
+   PAREJA   : fx-skeletons.js (la lógica que las pinta).
+              Ambos archivos forman la capa 5.
+   REVERSIBLE: borra las dos líneas (link + script) y desaparece.
+   NOTAS
+   - Lleva su PROPIO shimmer (fxSkelShimmer) para ser autónoma:
+     funciona aunque no esté instalada la capa 1.
+   - Con prefers-reduced-motion: reduce, las siluetas se muestran
+     fijas (sin brillo). Siguen cumpliendo su función.
+   ============================================================ */
+
+.fx-skel-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px;
+  margin-bottom: 8px;
+}
+/* Variante "lista" (forma de .sol-card): cuerpo + columna derecha */
+.fx-skel-card--list {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  border-left: 5px solid var(--border-strong);
+}
+/* Variante "avatar" (forma de .pac-card / .prof-card) */
+.fx-skel-card--avatar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px;
+}
+
+.fx-skel-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.fx-skel-col--right { align-items: flex-end; gap: 6px; }
+
+.fx-skel-avatar {
+  width: 50px; height: 50px; border-radius: 50%; flex-shrink: 0;
+}
+
+.fx-skel-line { height: 12px; border-radius: 6px; }
+.fx-skel-line.sm { height: 9px; }
+.fx-skel-pill { width: 64px; height: 18px; border-radius: var(--r-pill); }
+
+.fx-skel-line.w40 { width: 40%; }
+.fx-skel-line.w50 { width: 50%; }
+.fx-skel-line.w55 { width: 55%; }
+.fx-skel-line.w60 { width: 60%; }
+.fx-skel-line.w70 { width: 70%; }
+.fx-skel-line.w80 { width: 80%; }
+.fx-skel-line.w90 { width: 90%; }
+
+/* Relleno con brillo */
+.fx-skel-avatar, .fx-skel-line, .fx-skel-pill {
+  background: linear-gradient(90deg, var(--bg-soft) 25%, #eef4f9 50%, var(--bg-soft) 75%);
+  background-size: 400px 100%;
+  animation: fxSkelShimmer 1.2s linear infinite;
+}
+@keyframes fxSkelShimmer {
+  0%   { background-position: -200px 0; }
+  100% { background-position:  200px 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-skel-avatar, .fx-skel-line, .fx-skel-pill {
+    animation: none;
+    background: var(--bg-soft);
+  }
+}
