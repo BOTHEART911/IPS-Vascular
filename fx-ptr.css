@@ -1,0 +1,48 @@
+/* ============================================================
+   fx-ptr.css — CAPA 6 · Jalar para recargar / pull-to-refresh
+   IPS Vascular · capa independiente, no edita styles.css
+   ------------------------------------------------------------
+   QUÉ HACE
+   - Desactiva el pull-to-refresh NATIVO del navegador (para que no
+     compita con el nuestro) y estiliza el indicador circular que
+     baja desde el tope al jalar.
+   ------------------------------------------------------------
+   INSTALAR  (en <head>, DESPUÉS de styles.css):
+   <link rel="stylesheet" href="./fx-ptr.css" />
+   ------------------------------------------------------------
+   PAREJA   : fx-ptr.js (el gesto y la recarga).
+   REVERSIBLE: borra las dos líneas (link + script) y desaparece.
+   NOTA: con prefers-reduced-motion: reduce, el indicador no gira
+   (el gesto sigue funcionando; solo se quita la animación).
+   ============================================================ */
+
+/* Frena el pull-to-refresh nativo de Chrome/Android */
+html, body { overscroll-behavior-y: contain; }
+
+.fx-ptr {
+  position: fixed;
+  top: 0; left: 50%;
+  transform: translateX(-50%) translateY(-50px);
+  z-index: 9000;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  box-shadow: var(--sh-md);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+}
+.fx-ptr--ready { box-shadow: 0 6px 18px rgba(14, 107, 168, .35); }
+
+.fx-ptr__spinner {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 2.5px solid var(--primary-soft);
+  border-top-color: var(--primary);
+}
+.fx-ptr--loading .fx-ptr__spinner { animation: fxPtrSpin .7s linear infinite; }
+@keyframes fxPtrSpin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-ptr--loading .fx-ptr__spinner { animation: none; }
+}
