@@ -1,0 +1,108 @@
+/* ============================================================
+   IPS VASCULAR — css/informes.css           (NUEVO · FASE 5)
+   Pareja de js/informes.js (ajuste 8).
+   Modal propio y no SweetAlert: aquí hay una lista larga de
+   casillas que tiene que poder rodar sin pelearse con el diálogo.
+   ============================================================ */
+
+.inf-modal { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: flex-end; justify-content: center; }
+.inf-modal.hidden { display: none; }
+@media (min-width: 620px) { .inf-modal { align-items: center; } }
+
+.inf-modal__fondo {
+  position: absolute; inset: 0; background: rgba(8, 33, 45, .55);
+  backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+}
+body.inf-abierto { overflow: hidden; }
+
+.inf-modal__caja {
+  position: relative; width: 100%; max-width: 620px;
+  max-height: 92vh; display: flex; flex-direction: column;
+  background: var(--bg-card); border-radius: var(--r-lg) var(--r-lg) 0 0;
+  box-shadow: var(--sh-xl); animation: infSube .22s ease-out;
+  padding-bottom: var(--safe-bottom);
+}
+@media (min-width: 620px) {
+  .inf-modal__caja { border-radius: var(--r-lg); max-height: 88vh; }
+}
+@keyframes infSube { from { transform: translateY(18px); opacity: .6; } to { transform: none; opacity: 1; } }
+
+.inf-modal__cab {
+  display: flex; align-items: center; gap: 10px;
+  padding: 16px 18px 12px; border-bottom: 1px solid var(--border);
+}
+.inf-modal__cab h3 {
+  margin: 0; font-family: var(--font-display); font-weight: 700;
+  font-size: 1.06rem; color: var(--primary);
+}
+.inf-modal__x {
+  margin-left: auto; background: none; border: none; cursor: pointer;
+  font-size: 1.7rem; line-height: 1; color: var(--text-muted); padding: 0 4px;
+}
+
+.inf-modal__cuerpo { padding: 14px 18px 18px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+.inf-filtros {
+  margin: 0 0 14px; font-size: 0.8rem; color: var(--text-soft);
+  background: var(--primary-soft); border-radius: var(--r-sm); padding: 9px 11px; line-height: 1.5;
+}
+.inf-filtros b { color: var(--primary); }
+
+/* ---------- Elegir formato ---------- */
+.inf-formatos { display: grid; grid-template-columns: 1fr; gap: 8px; }
+@media (min-width: 520px) { .inf-formatos { grid-template-columns: 1fr 1fr; } }
+.inf-fmt {
+  text-align: left; display: flex; flex-direction: column; gap: 3px;
+  border: 1.5px solid var(--border); background: var(--bg-base);
+  border-radius: var(--r-md); padding: 11px 13px; cursor: pointer;
+  font-family: var(--font-body); transition: border-color .15s, background .15s;
+}
+.inf-fmt.is-active { border-color: var(--primary); background: var(--primary-soft); }
+.inf-fmt__t { font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; color: var(--primary); }
+.inf-fmt__d { font-size: 0.75rem; color: var(--text-muted); line-height: 1.45; }
+
+/* ---------- Casillas ---------- */
+.inf-sub {
+  margin: 18px 0 8px; font-size: 0.82rem; font-weight: 700; color: var(--text-soft);
+}
+.inf-checks { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; }
+@media (max-width: 480px) { .inf-checks { grid-template-columns: 1fr; } }
+.inf-secs { display: flex; flex-direction: column; gap: 4px; }
+
+/* styles.css pone TODOS los <label> en mayúsculas, en azul y con
+   14 px de margen arriba (es el estilo de los campos de formulario).
+   Aquí eso deja una lista ilegible y separadísima, así que se anula
+   a propósito: son casillas, no rótulos de campo. */
+.inf-check {
+  display: flex; align-items: flex-start; gap: 9px; cursor: pointer;
+  margin: 0; padding: 7px 8px; border-radius: var(--r-sm);
+  font-size: 0.84rem; font-weight: 500; letter-spacing: normal;
+  text-transform: none; color: var(--text-main); transition: background .12s;
+}
+.inf-check:hover { background: var(--bg-soft); }
+.inf-check input { width: 17px; height: 17px; accent-color: var(--primary); flex-shrink: 0; margin-top: 1px; }
+.inf-check span { min-width: 0; }
+.inf-check--ancho span { display: flex; flex-direction: column; gap: 1px; }
+.inf-check--ancho b { font-weight: 700; color: var(--text-main); }
+.inf-check--ancho small { font-size: 0.73rem; color: var(--text-muted); line-height: 1.4; }
+
+.inf-atajos { display: flex; gap: 14px; margin-top: 8px; padding-left: 8px; }
+.inf-atajos button {
+  background: none; border: none; cursor: pointer; padding: 0;
+  font-family: var(--font-body); font-weight: 700; font-size: 0.78rem;
+  color: var(--primary); text-decoration: underline;
+}
+
+/* ---------- Pie ---------- */
+.inf-modal__pie {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 12px 18px 16px; border-top: 1px solid var(--border); background: var(--bg-base);
+}
+.inf-resumen { font-size: 0.76rem; color: var(--text-muted); font-weight: 600; margin-right: auto; }
+.inf-modal__pie .btn { padding: 9px 18px; }
+.inf-modal__pie .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+@media (prefers-reduced-motion: reduce) {
+  .inf-modal__caja { animation: none; }
+  .inf-fmt, .inf-check { transition: none; }
+}
