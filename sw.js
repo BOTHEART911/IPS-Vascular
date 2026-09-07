@@ -1,9 +1,17 @@
 /**
- * IPS VASCULAR — Service Worker
- * network-first para HTML/JS/CSS, version.js siempre desde la red.
+ * IPS VASCULAR — Service Worker  ·  v2 (Fase 1, 07/09/2026)
+ * - Shell (HTML/JS/CSS): network-first (siempre lo más nuevo, con respaldo sin señal).
+ * - Imágenes y sonidos propios: cache-first (se piden UNA vez y quedan guardados).
+ * - version.js: siempre de la red.
+ * Al cambiar CACHE_NAME se borra el caché viejo solo.
  */
-const CACHE_NAME = 'ips-vascular-v1';
-const APP_SHELL = ['./', './index.html', './app.js', './styles.css', './manifest.webmanifest'];
+const CACHE_NAME = 'ips-vascular-v2';
+const APP_SHELL = [
+  './', './index.html', './app.js', './styles.css', './manifest.webmanifest',
+  './img/logo.webp', './img/solicitudes.webp', './img/pacientes.webp',
+  './img/profesionales.webp', './img/bot.webp', './img/config.webp',
+  './audio/login.mp3', './audio/click.mp3', './audio/ok.mp3', './audio/err.mp3'
+];
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -21,14 +29,30 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
+  const propio = (url.origin === location.origin);
 
+  // version.js: nunca del caché
   if (url.pathname.endsWith('/version.js')) {
     event.respondWith(fetch(req, { cache: 'no-store' })
       .catch(() => new Response('{}', { headers: { 'Content-Type': 'application/json' } })));
     return;
   }
-  const isShell = /\.(html|js|css)$/.test(url.pathname) || url.pathname.endsWith('/');
-  if (isShell && url.origin === location.origin) {
+
+  // Imágenes y audios propios: cache-first (aquí está la ganancia de velocidad)
+  if (propio && /\.(webp|png|jpg|jpeg|gif|svg|mp3|ogg|wav)$/i.test(url.pathname)) {
+    event.respondWith(
+      caches.match(req).then(hit => hit || fetch(req).then(res => {
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then(c => c.put(req, copy)).catch(() => {});
+        return res;
+      }))
+    );
+    return;
+  }
+
+  // Shell: network-first
+  const isShell = /\.(html|js|css|webmanifest)$/.test(url.pathname) || url.pathname.endsWith('/');
+  if (isShell && propio) {
     event.respondWith(
       fetch(req).then(res => {
         const copy = res.clone();
@@ -38,5 +62,6 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
+
   event.respondWith(fetch(req).catch(() => caches.match(req)));
 });
