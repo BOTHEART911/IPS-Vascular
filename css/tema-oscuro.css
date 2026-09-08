@@ -1,0 +1,322 @@
+/* ============================================================
+ * IPS VASCULAR — MODO OSCURO (ajuste 11) · FASE 6
+ * ------------------------------------------------------------
+ * © Oscar Polanía — Experto en Soluciones Digitales
+ * Contacto: +57 310 323 0712
+ * Software propietario. Cualquier modificación de este archivo
+ * por terceros anula la garantía de funcionamiento.
+ * ------------------------------------------------------------
+ * CÓMO ESTÁ HECHO
+ *   styles.css declara casi toda su paleta como variables en
+ *   :root, así que el tema NO reescribe reglas: redefine las
+ *   variables bajo html[data-tema="oscuro"]. Debajo van, uno
+ *   por uno, los repasos de lo que NO usa variables: los pocos
+ *   colores escritos a mano, el azul cuando hace de FONDO (con
+ *   texto blanco encima), SweetAlert2 (viene de CDN) y el
+ *   brillo de los esqueletos.
+ *
+ *   REGLA para lo que se construya de aquí en adelante: usa las
+ *   variables (--bg-card, --text-main, --border…) y el tema sale
+ *   solo. Un color escrito a mano hay que repasarlo aquí.
+ *
+ *   Esta hoja va SIEMPRE la ÚLTIMA, después de styles.css, de
+ *   las capas fx-* y de las hojas de css/.
+ * ============================================================ */
+
+/* ============================================================
+   1) BOTÓN DEL TEMA (fijo arriba a la derecha, en toda la app)
+   ============================================================ */
+.tema-btn {
+  position: fixed;
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  right: 14px;
+  z-index: 8800;                 /* debajo de modales (swal 1060 va aparte) */
+  width: 40px !important; height: 40px;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 18px; line-height: 1;
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1.5px solid var(--border-strong);
+  box-shadow: var(--sh-md);
+  cursor: pointer;
+  transition: transform .14s ease, background .18s ease, border-color .18s ease;
+}
+.tema-btn:hover  { transform: scale(1.06); }
+.tema-btn:active { transform: scale(.94); }
+.tema-btn.oculto { display: none !important; }
+
+/* En el encabezado de las vistas hay iconos a la derecha: el botón se
+   sube un poco y se achica para no montarse sobre ellos. */
+@media (max-width: 560px) {
+  .tema-btn {
+    width: 36px !important; height: 36px; font-size: 16px;
+    top: calc(6px + env(safe-area-inset-top, 0px)); right: 8px;
+  }
+}
+/* Con la rueda de fecha o un modal abiertos, el botón estorba. */
+body.rf-abierta .tema-btn,
+body.swal2-shown .tema-btn { display: none !important; }
+
+/* ============================================================
+   2) TOKENS DEL TEMA
+   ============================================================ */
+:root {
+  /* Azul cuando hace de FONDO con texto blanco encima. En claro es el
+     mismo de siempre; en oscuro baja a un azul profundo para que el
+     blanco siga leyéndose (si el azul se aclara, el blanco encima deja
+     de contrastar). */
+  --sup-azul-1: var(--primary-light);
+  --sup-azul-2: var(--primary);
+  --on-azul: #fff;
+  /* Tinta que va ENCIMA del verde de acento. */
+  --on-acento: #fff;
+  /* Brillo que recorre los esqueletos de carga. */
+  --brillo-esqueleto: #eef4f9;
+}
+
+html[data-tema="oscuro"] {
+  /* Le dice al navegador que pinte en oscuro lo suyo: listas de los
+     <select>, barras de desplazamiento y campos nativos. Sin esto, la
+     lista desplegable de Servicio/Tratamiento sale blanca. */
+  color-scheme: dark;
+
+  /* Marca — el azul clínico se aclara para poder leerlo como TEXTO
+     (styles.css lo usa así en títulos, nombres y etiquetas). */
+  --primary:        #6fb6ea;
+  --primary-2:      #4f9ad4;
+  --primary-light:  #93cdf5;
+  --primary-soft:   rgba(111, 182, 234, 0.15);
+
+  --accent:         #2ec9a6;
+  --accent-light:   #46dcba;
+  --accent-soft:    rgba(46, 201, 166, 0.14);
+  /* Sobre el verde claro, el blanco se queda en 1,7 de contraste (lo cazó
+     el barrido en "+ Nuevo usuario", el botón + de Solicitudes y el "Listo"
+     de la rueda): encima del acento va tinta oscura. */
+  --on-acento:      #0d1620;
+
+  /* Azul de fondo (con texto blanco encima) */
+  --sup-azul-1:     #2b6f9e;
+  --sup-azul-2:     #1d5580;
+
+  /* Estados de la solicitud — aclarados para leerse sobre fondo oscuro */
+  --e-pendiente:    #9aa8b6;
+  --e-asignada:     #f0a132;
+  --e-confirmada:   #58a9e0;
+  --e-realizada:    #43c46a;
+  --e-descartada:   #78889a;
+  --e-cancelada:    #f06a68;
+
+  /* Roles */
+  --rol-dev:        #a78bfa;
+  --rol-general:    #58a9e0;
+
+  --ok:    #43c46a;
+  --error: #f06a68;
+  --warn:  #f0a132;
+  --info:  #58a9e0;
+
+  /* Neutros */
+  --bg-base:   #0d1620;
+  --bg-soft:   #16222e;
+  --bg-card:   #182634;
+  --text-main: #e6eef5;
+  --text-soft: #adc0cf;
+  --text-muted:#7d93a4;
+
+  --border:        rgba(150, 195, 228, 0.14);
+  --border-strong: rgba(150, 195, 228, 0.28);
+
+  /* Sombras: en oscuro no se ve una sombra azul, se ve negro. */
+  --sh-sm: 0 1px 3px rgba(0, 0, 0, 0.40);
+  --sh-md: 0 4px 16px rgba(0, 0, 0, 0.46);
+  --sh-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --sh-xl: 0 24px 48px rgba(0, 0, 0, 0.62);
+
+  --brillo-esqueleto: #22323f;
+}
+
+/* ============================================================
+   3) REPASOS — fondos escritos a mano en styles.css
+   ============================================================ */
+
+/* El velo de color del fondo de la app: en oscuro se sube un punto para
+   que no quede un negro plano. */
+html[data-tema="oscuro"] body {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(46, 201, 166, 0.07), transparent 42%),
+    radial-gradient(circle at 100% 100%, rgba(111, 182, 234, 0.09), transparent 42%),
+    var(--bg-base);
+}
+
+/* Encabezado pegajoso y barra de filtros de Solicitudes: los dos llevaban
+   el gris azulado claro escrito a mano como rgba(244,248,251,…), que no se
+   ve buscando "#fff". La barra de filtros salía BLANCA sobre la vista
+   oscura; se cazó con una captura, no con la lectura del código. */
+html[data-tema="oscuro"] .app-header { background: rgba(13, 22, 32, 0.94); }
+html[data-tema="oscuro"] .sol-filtros { background: rgba(13, 22, 32, 0.96); }
+
+/* Barras del gráfico de columnas (styles.css: fill:#11212d). */
+html[data-tema="oscuro"] .bc-bar rect { fill: #8fb6d4; }
+
+/* Columnas "suaves" del tablero (tableros.css: #cfe3f0 → #9dc4dd). */
+html[data-tema="oscuro"] .cols__b--suave {
+  background: linear-gradient(180deg, #3f6a86, #2c4d63);
+}
+
+/* Barra de estado del módulo Bot: son degradados escritos a mano con texto
+   blanco encima. Los grises y el rojo claros deslumbran como bloque grande
+   sobre la vista oscura y dejan el texto en 2,4 de contraste. El estado
+   "esperando QR" NO se toca: es amarillo con tinta oscura y ya se lee. */
+html[data-tema="oscuro"] .bot-status--online  { background: linear-gradient(135deg, #1a8a4e, #12643a); }
+html[data-tema="oscuro"] .bot-status--offline { background: linear-gradient(135deg, #c0392b, #8f1f1f); }
+html[data-tema="oscuro"] .bot-status--unknown { background: linear-gradient(135deg, #52657a, #3b4a5c); }
+
+/* El QR del bot se deja SOBRE BLANCO a propósito: un QR sobre fondo
+   oscuro no lo lee ningún teléfono. */
+html[data-tema="oscuro"] .bot-qr-img,
+html[data-tema="oscuro"] .bot-qr-frame { background: #fff; }
+
+/* Brillo de los esqueletos de carga. Clases reales: .fx-shimmer
+   (fx-micro.css) y el trío de fx-skeletons.css. */
+html[data-tema="oscuro"] .fx-shimmer,
+html[data-tema="oscuro"] .fx-skel-avatar,
+html[data-tema="oscuro"] .fx-skel-line,
+html[data-tema="oscuro"] .fx-skel-pill {
+  background: linear-gradient(90deg, var(--bg-soft) 25%, var(--brillo-esqueleto) 50%, var(--bg-soft) 75%);
+  background-size: 400px 100%;
+}
+
+/* ============================================================
+   4) REPASOS — el azul cuando hace de FONDO
+   Si no se bajan, el texto blanco de encima queda ilegible sobre el
+   azul claro del tema.
+   ============================================================ */
+html[data-tema="oscuro"] .btn-primary,
+html[data-tema="oscuro"] .swal2-confirm,
+html[data-tema="oscuro"] .prof-card__avatar,
+html[data-tema="oscuro"] .pac-card__avatar,
+html[data-tema="oscuro"] .ins-fab,
+html[data-tema="oscuro"] .cols__b,
+html[data-tema="oscuro"] .barra__fill,
+html[data-tema="oscuro"] .mt-persona__ini,
+html[data-tema="oscuro"] .profx__ini {
+  background: linear-gradient(135deg, var(--sup-azul-1), var(--sup-azul-2)) !important;
+  color: var(--on-azul);
+}
+html[data-tema="oscuro"] .welcome-bar {
+  background: linear-gradient(135deg, #1f5f8d, #143d5c);
+  color: var(--on-azul);
+}
+html[data-tema="oscuro"] .chip.is-active,
+html[data-tema="oscuro"] .mt-tab.is-active,
+html[data-tema="oscuro"] .app-header__back:hover,
+html[data-tema="oscuro"] .app-header__icon:hover,
+html[data-tema="oscuro"] .pin-key:active,
+html[data-tema="oscuro"] .ins-b:hover {
+  background: var(--sup-azul-1);
+  border-color: var(--sup-azul-1);
+  color: var(--on-azul);
+}
+/* Usuarios: el fondo sale de var(--rol-*), que en oscuro son colores
+   CLAROS. El blanco escrito a mano en styles.css se quedaba en 2,57 de
+   contraste (lo cazó el barrido, no la vista): la tinta pasa a oscura.
+   El rol DESARROLLADOR es la excepción: su morado aguanta el blanco. */
+/* Botones de acento: styles.css les escribe color:#fff a mano. */
+html[data-tema="oscuro"] .btn-accent,
+html[data-tema="oscuro"] .btn-success,
+html[data-tema="oscuro"] .fab,
+html[data-tema="oscuro"] .rf-ok { color: var(--on-acento); }
+
+html[data-tema="oscuro"] .usr-card__avatar,
+html[data-tema="oscuro"] .usr-chip { color: #0d1620; }
+html[data-tema="oscuro"] .usr-card__avatar--desarrollador,
+html[data-tema="oscuro"] .usr-chip--desarrollador { background: #7c5cd6; color: #fff; }
+
+/* "Eliminar sesión" (módulo Bot) lleva el rojo ESCRITO EN EL ATRIBUTO
+   style dentro de app.js, así que solo se puede repasar con !important.
+   Sin esto queda en 2,38 de contraste sobre el fondo oscuro. */
+html[data-tema="oscuro"] #bot-logout {
+  color: #f0908e !important;
+  border-color: rgba(240, 106, 104, .38) !important;
+}
+
+/* La franja del login y la barra de carga se ven bien con el azul claro:
+   ahí no hay texto encima. No se tocan. */
+
+/* ============================================================
+   5) REPASOS — SweetAlert2 (CDN)
+   styles.css ya lo viste con variables; aquí van solo las piezas que
+   el CDN pinta con blancos y grises propios.
+   ============================================================ */
+html[data-tema="oscuro"] .swal2-backdrop-show { background: rgba(0, 0, 0, .58) !important; }
+html[data-tema="oscuro"] .swal2-popup { color: var(--text-main) !important; }
+html[data-tema="oscuro"] .swal2-html-container { color: var(--text-soft) !important; }
+html[data-tema="oscuro"] .swal2-close { color: var(--text-muted) !important; }
+html[data-tema="oscuro"] .swal2-close:hover { color: var(--error) !important; }
+html[data-tema="oscuro"] .swal2-cancel {
+  background: rgba(240, 106, 104, .14) !important;
+  color: #f0908e !important;
+  border-color: rgba(240, 106, 104, .38) !important;
+}
+html[data-tema="oscuro"] .swal2-input,
+html[data-tema="oscuro"] .swal2-textarea,
+html[data-tema="oscuro"] .swal2-select,
+html[data-tema="oscuro"] .swal2-file {
+  background: var(--bg-soft) !important;
+  color: var(--text-main) !important;
+}
+html[data-tema="oscuro"] .swal2-validation-message {
+  background: rgba(240, 106, 104, .14) !important;
+  color: #f0908e !important;
+}
+/* Los iconos del CDN traen su propio color: el aro se ve bien, pero el
+   fondo del popup los dejaba flotando. */
+html[data-tema="oscuro"] .swal2-icon.swal2-warning { border-color: var(--warn) !important; color: var(--warn) !important; }
+html[data-tema="oscuro"] .swal2-icon.swal2-info,
+html[data-tema="oscuro"] .swal2-icon.swal2-question { border-color: var(--info) !important; color: var(--info) !important; }
+html[data-tema="oscuro"] .swal2-toast { background: var(--bg-card) !important; box-shadow: var(--sh-lg) !important; }
+html[data-tema="oscuro"] .swal2-toast .swal2-title { color: var(--text-main) !important; }
+
+/* Los campos que app.js mete DENTRO del modal (Nueva solicitud, Asignar
+   cita) son <input>/<select>/<textarea> normales: styles.css ya les da
+   var(--bg-card), que en oscuro es oscuro. Se les baja un punto para que
+   se distingan del fondo de la tarjeta del modal. */
+html[data-tema="oscuro"] .swal2-html-container input,
+html[data-tema="oscuro"] .swal2-html-container select,
+html[data-tema="oscuro"] .swal2-html-container textarea { background: var(--bg-soft); }
+
+/* ============================================================
+   6) REPASOS — capas de las fases 3, 4 y 5
+   ============================================================ */
+/* Botón de descarga y tarjetas de informes: heredan variables, solo se
+   corrige el blanco escrito a mano de las pastillas de estado. */
+/* Las pastillas de estado y la pila del tablero pintan su fondo con
+   var(--e-*), que en oscuro son colores CLAROS: la tinta blanca escrita
+   a mano en styles.css/tableros.css pasa a oscura para poder leerse. */
+html[data-tema="oscuro"] .estado-badge,
+html[data-tema="oscuro"] .pila i { color: #0d1620; }
+html[data-tema="oscuro"] .sol-chips .chip.is-active .chip__n {
+  background: rgba(255, 255, 255, .22); color: var(--on-azul);
+}
+/* Reseña de WhatsApp en Insights (verde de marca, se deja igual). */
+
+/* La imagen del módulo Bot y los banners son fotos: en oscuro se bajan
+   un punto de brillo para que no deslumbren. */
+html[data-tema="oscuro"] .menu-tile img,
+html[data-tema="oscuro"] .brand-logo { filter: brightness(.94); }
+
+/* ============================================================
+   7) TRANSICIÓN AL CAMBIAR DE TEMA
+   ============================================================ */
+html.tema-cambiando,
+html.tema-cambiando body,
+html.tema-cambiando .card,
+html.tema-cambiando .app-header,
+html.tema-cambiando .sol-card { transition: background-color .22s ease, color .22s ease, border-color .22s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  html.tema-cambiando, html.tema-cambiando * { transition: none !important; }
+  .tema-btn { transition: none; }
+}

@@ -1,0 +1,161 @@
+/* ============================================================
+ * IPS VASCULAR — RUEDA DE FECHA/HORA ESTILO iOS (ajuste 12)
+ * FASE 6 · © Oscar Polanía · +57 310 323 0712
+ * ------------------------------------------------------------
+ * Todo con las variables de styles.css, así el modo oscuro
+ * (css/tema-oscuro.css) la pinta sola sin repasar nada aquí.
+ * ============================================================ */
+
+/* ── El campo: el input original se esconde y queda un botón ── */
+.rf-campo { position: relative; margin-bottom: 4px; }
+.rf-oculto {
+  position: absolute !important;
+  width: 1px !important; height: 1px !important;
+  opacity: 0 !important; pointer-events: none !important;
+  padding: 0 !important; margin: 0 !important; border: 0 !important;
+}
+.rf-disparo {
+  width: 100%;
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  border: 1.5px solid var(--border-strong);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-weight: 600; font-size: 0.92rem;
+  text-align: left; cursor: pointer;
+  transition: border-color .15s, box-shadow .15s, transform .1s;
+}
+.rf-disparo:hover  { border-color: var(--primary); box-shadow: 0 2px 10px var(--primary-soft); }
+.rf-disparo:active { transform: scale(.995); }
+.rf-disparo.vacio  { color: var(--text-muted); font-weight: 500; }
+.rf-disparo__ico   { font-size: 1.05rem; line-height: 1; flex-shrink: 0; }
+.rf-disparo__txt   { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rf-disparo__mas   {
+  flex-shrink: 0; font-size: 0.66rem; font-weight: 800; letter-spacing: .5px;
+  text-transform: uppercase; color: var(--primary);
+  background: var(--primary-soft); padding: 4px 9px; border-radius: var(--r-pill);
+}
+
+/* ── El overlay: por encima de SweetAlert2 (que vive en 1060) ── */
+.rf-overlay {
+  position: fixed; inset: 0; z-index: 10600;
+  background: rgba(8, 30, 48, .45);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  display: flex; align-items: flex-end; justify-content: center;
+  animation: rfEntra .18s ease;
+}
+.rf-overlay.hidden { display: none; }
+@keyframes rfEntra { from { opacity: 0 } to { opacity: 1 } }
+
+.rf-card {
+  background: var(--bg-card);
+  width: 100%; max-width: 480px;
+  border-radius: 24px 24px 0 0;
+  box-shadow: var(--sh-xl);
+  padding-bottom: calc(14px + var(--safe-bottom));
+  overflow: hidden;
+  animation: rfSube .22s cubic-bezier(.22, 1, .36, 1);
+}
+@keyframes rfSube { from { transform: translateY(24px) } to { transform: none } }
+@media (min-width: 520px) {
+  .rf-overlay { align-items: center; }
+  .rf-card { border-radius: 24px; animation: none; }
+}
+
+.rf-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 12px 14px; border-bottom: 1px solid var(--border);
+}
+.rf-btn-txt {
+  font-family: var(--font-body); font-weight: 700; font-size: .9rem;
+  color: var(--text-soft); padding: 8px 10px; background: transparent;
+  border: none; cursor: pointer; border-radius: var(--r-sm); flex-shrink: 0;
+}
+.rf-btn-txt:hover { background: var(--bg-soft); }
+.rf-ok {
+  color: var(--on-acento, #fff);
+  background: linear-gradient(135deg, var(--accent-light), var(--accent));
+  padding: 9px 18px; border-radius: var(--r-pill);
+  box-shadow: 0 3px 10px rgba(22, 160, 133, .30);
+}
+.rf-ok:hover { filter: brightness(1.06); background: linear-gradient(135deg, var(--accent-light), var(--accent)); }
+.rf-resumen {
+  flex: 1; text-align: center;
+  font-family: var(--font-display); font-weight: 700; font-size: .82rem;
+  color: var(--primary); line-height: 1.25;
+  overflow: hidden; text-overflow: ellipsis;
+}
+
+.rf-aviso {
+  margin: 10px 14px 0; padding: 8px 12px;
+  border-radius: var(--r-sm);
+  background: rgba(217, 119, 6, .12);
+  border: 1px solid rgba(217, 119, 6, .30);
+  color: var(--warn);
+  font-size: .76rem; font-weight: 700; text-align: center;
+}
+.rf-aviso.hidden { display: none; }
+
+/* ── Rótulos de las columnas ── */
+.rf-rotulos {
+  display: flex; padding: 10px 10px 0;
+  font-size: .62rem; font-weight: 800; letter-spacing: .6px;
+  text-transform: uppercase; color: var(--text-muted);
+}
+.rf-rotulos span { flex: 1; text-align: center; }
+
+/* ── Ruedas ── */
+.rf-ruedas { position: relative; display: flex; height: 200px; padding: 0 10px; }
+.rf-marca {
+  position: absolute; left: 10px; right: 10px; top: 50%; transform: translateY(-50%);
+  height: 40px; background: var(--primary-soft);
+  border: 1px solid var(--border-strong); border-radius: 12px;
+  pointer-events: none; z-index: 0;
+}
+.rf-col {
+  flex: 1; overflow-y: scroll; scroll-snap-type: y mandatory; text-align: center;
+  -ms-overflow-style: none; scrollbar-width: none; position: relative; z-index: 1;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 28%, #000 72%, transparent);
+          mask-image: linear-gradient(180deg, transparent, #000 28%, #000 72%, transparent);
+}
+.rf-col::-webkit-scrollbar { display: none; }
+.rf-item {
+  height: 40px; line-height: 40px; scroll-snap-align: center;
+  font-size: 1rem; font-weight: 600; color: var(--text-muted);
+  transition: color .12s, transform .12s; cursor: pointer;
+  -webkit-user-select: none; user-select: none;
+}
+.rf-item.sel { color: var(--primary); font-weight: 800; transform: scale(1.10); }
+.rf-pad { height: 80px; }   /* (200 - 40) / 2 = 80, centra los extremos */
+
+/* ── Flechas ▲▼ (para el computador; en el móvil se arrastra) ── */
+.rf-nav { display: flex; padding: 2px 10px; gap: 0; }
+.rf-flecha {
+  flex: 1; background: transparent; border: none; cursor: pointer;
+  font-size: .95rem; line-height: 1; padding: 7px 0; color: var(--primary);
+  border-radius: 8px; opacity: .65; transition: background .12s, opacity .12s;
+}
+.rf-flecha:hover  { background: var(--primary-soft); opacity: 1; }
+.rf-flecha:active { transform: translateY(1px); }
+
+/* ── Modo "solo fecha" (input type=date): sin hora ni minutos ── */
+.rf-overlay.rf-solo-fecha .rf-hora-col { display: none; }
+
+/* ── Móvil angosto: cinco columnas caben, pero apretadas ── */
+@media (max-width: 400px) {
+  .rf-ruedas { padding: 0 6px; height: 184px; }
+  .rf-item { font-size: .92rem; }
+  .rf-resumen { font-size: .74rem; }
+  .rf-rotulos { padding: 8px 6px 0; font-size: .58rem; }
+  .rf-nav { padding: 2px 6px; }
+}
+
+/* La app detrás no debe moverse mientras la rueda está abierta. */
+body.rf-abierta { overflow: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rf-overlay, .rf-card { animation: none; }
+  .rf-item { transition: none; }
+}
