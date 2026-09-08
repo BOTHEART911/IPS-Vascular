@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#0e6ba8" />
+  <meta name="description" content="Gestión de citas — IPS Vascular" />
+  <title>IPS Vascular</title>
+
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" type="image/png" href="./img/icon-192.png" />
+  <link rel="apple-touch-icon" href="./img/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="IPS Vascular" />
+  <meta name="mobile-web-app-capable" content="yes" />
+
+  <!-- FASE 6 · ANTIPARPADEO DEL TEMA
+       Deja puesto data-tema ANTES del primer pintado. Si esto se ejecutara
+       más tarde (por ejemplo desde js/tema-oscuro.js), la app se vería un
+       instante en claro y saltaría a oscuro: ese parpadeo blanco es justo
+       lo que molesta de noche. -->
+  <script>
+    (function () {
+      try {
+        var g = localStorage.getItem('ips.tema.v1');
+        var oscuro = (g === 'oscuro') || (!g && window.matchMedia &&
+                     window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.setAttribute('data-tema', oscuro ? 'oscuro' : 'claro');
+        var m = document.querySelector('meta[name="theme-color"]');
+        if (m && oscuro) m.setAttribute('content', '#0d1620');
+      } catch (e) {
+        document.documentElement.setAttribute('data-tema', 'claro');
+      }
+    })();
+  </script>
+
+  <!-- Fuentes: preconnect + link (antes iban con @import dentro de styles.css, que bloquea el pintado) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap" />
+
+  <!-- Lo primero que se ve: logo del login -->
+  <link rel="preload" as="image" href="./img/logo.webp" />
+
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./fx-micro.css" />
+  <link rel="stylesheet" href="./fx-skeletons.css" />
+  <link rel="stylesheet" href="./fx-ptr.css" />
+  <link rel="stylesheet" href="./fx-ripple.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+  <link rel="stylesheet" href="./css/vista-solicitudes.css" />
+  <link rel="stylesheet" href="./css/tableros.css" />
+  <link rel="stylesheet" href="./css/insights.css" />
+  <!-- FASE 5 (ajustes 7 y 8) -->
+  <link rel="stylesheet" href="./css/mitrabajo.css" />
+  <link rel="stylesheet" href="./css/informes.css" />
+  <!-- FASE 6 (ajustes 11 y 12) -->
+  <link rel="stylesheet" href="./css/rueda-fecha.css" />
+  <!-- tema-oscuro.css va SIEMPRE de última: redefine las variables de todo
+       lo anterior. Si se sube antes de otra hoja, deja de pintar el tema. -->
+  <link rel="stylesheet" href="./css/tema-oscuro.css" />
+</head>
+<body>
+
+  <!-- BARRA DE PROGRESO (antes era un girador que tapaba la pantalla) -->
+  <div id="loader" class="loader hidden" role="status" aria-live="polite" aria-label="Cargando"></div>
+
+  <!-- ============================================================ INSTALAR -->
+  <section id="view-instalar" class="view">
+    <div class="login-wrap">
+      <div class="login-card install-card">
+        <img src="./img/logo.webp" alt="IPS Vascular" class="brand-logo" width="320" height="320" decoding="async" />
+        <h1 class="login-title">IPS Vascular</h1>
+        <p class="login-sub">Instala la aplicación para acceder más rápido.</p>
+        <div id="install-android" class="hidden mt-md">
+          <button id="btn-install" class="btn btn-primary btn-lg btn-block" style="display:none;">📲 Instalar aplicación</button>
+          <button id="btn-cont-web" class="btn btn-ghost btn-block mt-sm">🌐 Continuar en el navegador</button>
+        </div>
+        <div id="install-ios" class="hidden mt-md">
+          <ol style="text-align:left; font-size:0.9rem; line-height:1.7; color:var(--text-soft); padding-left:20px;">
+            <li>Pulsa <strong>Compartir</strong> en Safari.</li>
+            <li>Selecciona <strong>"Añadir a pantalla de inicio"</strong>.</li>
+            <li>Pulsa <strong>"Añadir"</strong>.</li>
+          </ol>
+          <button id="btn-cont-web-ios" class="btn btn-ghost btn-block mt-md">🌐 Continuar en el navegador</button>
+        </div>
+        <p class="app-version-line">—</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ LOGIN -->
+  <section id="view-login" class="view">
+    <div class="login-wrap">
+      <div class="login-card">
+        <img src="./img/logo.webp" alt="IPS Vascular" class="login-logo" width="320" height="320" fetchpriority="high" decoding="async" />
+        <h1 class="login-title">Bienvenido</h1>
+        <p class="login-sub">IPS Vascular — Ingresa tu PIN</p>
+        <div class="pin-pad">
+          <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+        </div>
+        <div class="pin-keypad">
+          <button class="pin-key" data-key="1">1</button>
+          <button class="pin-key" data-key="2">2</button>
+          <button class="pin-key" data-key="3">3</button>
+          <button class="pin-key" data-key="4">4</button>
+          <button class="pin-key" data-key="5">5</button>
+          <button class="pin-key" data-key="6">6</button>
+          <button class="pin-key" data-key="7">7</button>
+          <button class="pin-key" data-key="8">8</button>
+          <button class="pin-key" data-key="9">9</button>
+          <button class="pin-key action" data-key="clear">Borrar</button>
+          <button class="pin-key" data-key="0">0</button>
+          <button class="pin-key action" data-key="back">⌫</button>
+        </div>
+         <img class="brand" alt="Banner" src="./img/copyright.webp" width="300" height="66" loading="lazy" decoding="async" />
+      <p class="app-version-line">—</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ INICIO (DASHBOARD) -->
+  <section id="view-inicio" class="view">
+    <div class="container">
+      <div class="welcome-bar">
+        <div class="welcome-bar__avatar" id="welcome-avatar">?</div>
+        <div class="welcome-bar__info">
+          <div class="welcome-bar__hello">Bienvenido</div>
+          <div class="welcome-bar__name" id="welcome-name">—</div>
+          <span class="welcome-bar__rol" id="welcome-rol">—</span>
+        </div>
+        <button class="welcome-bar__logout" id="btn-logout" title="Cerrar sesión">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </button>
+      </div>
+
+    <h2 style="margin-top:24px; margin-bottom:4px;">Módulos</h2>
+      <p class="muted">Selecciona dónde quieres trabajar</p>
+      <div class="menu-grid" id="menu-grid"></div>
+
+      <h2 style="margin-top:24px; margin-bottom:4px;">Indicadores</h2>
+      <div id="dash-content" class="dash-content"></div>
+
+      <img class="brand" alt="Banner" src="./img/copyright.webp" width="300" height="66" loading="lazy" decoding="async" />
+     <p class="app-version-line">—</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ SOLICITUDES -->
+  <section id="view-solicitudes" class="view">
+    <header class="app-header">
+      <button class="app-header__back" data-go="inicio" title="Volver">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <h1 class="app-header__title">Solicitudes</h1>
+      <!-- FASE 5 (ajuste 8): genera el Excel o el PDF de lo que se esté viendo. -->
+      <button id="inf-btn-solicitudes" class="app-header__icon" title="Generar informe" aria-label="Generar informe">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+    </header>
+    <div class="container">
+      <!-- FASE 3: el buscador deja de esconderse tras un icono (con 810
+           pendientes es lo primero que se usa) y aparecen el orden y el
+           filtro por profesional. Los chips los pinta app.js con su conteo. -->
+      <div class="sol-filtros">
+        <div class="sol-filtros__fila">
+          <div class="sol-buscar" id="sol-buscar">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="sol-search-input" type="search" placeholder="Paciente, documento o servicio" autocomplete="off" />
+            <button class="sol-buscar__limpiar" id="sol-buscar-limpiar" title="Borrar búsqueda" aria-label="Borrar búsqueda">×</button>
+          </div>
+          <select id="sol-orden" class="sol-orden" title="Ordenar">
+            <option value="RECIENTES">Más recientes</option>
+            <option value="ANTIGUAS">Más antiguas</option>
+            <option value="CITA">Cita más próxima</option>
+          </select>
+        </div>
+        <div class="chips sol-chips" id="sol-chips-estado"></div>
+      </div>
+      <div class="sol-resumen">
+        <span class="sol-resumen__txt" id="sol-subtitle">—</span>
+        <button class="sol-resumen__limpiar hidden" id="sol-limpiar">Quitar filtros</button>
+      </div>
+      <div class="sol-filtros__fila" style="margin-bottom:2px;">
+        <select id="sol-profesional" class="sol-orden" style="max-width:100%;flex:1 1 auto;" title="Profesional">
+          <option value="">Todos los profesionales</option>
+        </select>
+        <select id="sol-origen" class="sol-orden" title="De dónde viene">
+          <option value="">Todo origen</option>
+          <option value="BOT">Por WhatsApp</option>
+          <option value="APP">Creadas aquí</option>
+          <option value="HISTORICO">Anteriores</option>
+        </select>
+      </div>
+      <div id="sol-content" class="sol-list"></div>
+    </div>
+    <button id="sol-fab" class="fab" title="Nueva solicitud">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </section>
+
+  <!-- ============================================================ MI TRABAJO (FASE 5 · ajuste 7) -->
+  <section id="view-mitrabajo" class="view">
+    <header class="app-header">
+      <button class="app-header__back" data-go="inicio" title="Volver">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <h1 class="app-header__title">Mi trabajo</h1>
+      <button id="inf-btn-mitrabajo" class="app-header__icon" title="Generar informe" aria-label="Generar informe">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+    </header>
+    <div class="container">
+      <div class="mt-tabs" id="mt-tabs"></div>
+      <div id="mt-content"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ PROFESIONALES -->
+  <section id="view-profesionales" class="view">
+    <header class="app-header">
+      <button class="app-header__back" data-go="inicio" title="Volver">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <h1 class="app-header__title">Profesionales</h1>
+    </header>
+    <div class="container">
+      <p class="muted" style="margin-top:8px;">Toca un profesional para ver su tablero estadístico</p>
+      <div id="prof-content" class="prof-list"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ PACIENTES -->
+  <section id="view-pacientes" class="view">
+    <header class="app-header">
+      <button class="app-header__back" data-go="inicio" title="Volver">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <h1 class="app-header__title">Pacientes</h1>
+      <button id="pac-search-btn" class="app-header__icon" title="Buscar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+    </header>
+    <div class="container">
+      <div id="pac-search-bar" class="search-bar hidden">
+        <input id="pac-search-input" type="search" placeholder="Buscar por nombre o documento…" autocomplete="off" />
+      </div>
+      <p class="muted" id="pac-subtitle" style="margin-top:8px;">—</p>
+      <div id="pac-content" class="pac-list"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ BOT -->
+  <section id="view-bot" class="view">
+    <header class="app-header">
+      <button class="app-header__back" data-go="inicio" title="Volver">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <h1 class="app-header__title">Mi Bot de WhatsApp</h1>
+      <button id="bot-refresh" class="app-header__icon" title="Actualizar estado">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </button>
+    </header>
+    <div class="container">
+      <div id="bot-content"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ CONFIGURACIÓN (solo DEV) -->
+  <section id="view-configuracion" class="view">
+    <header class="app-header">
+      <button class="app-header__back" data-go="inicio" title="Volver">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <h1 class="app-header__title">Configuración</h1>
+    </header>
+    <div class="container">
+      <p class="muted" style="margin-top:8px;">Solo DESARROLLADOR. Endpoints, credenciales, plantilla de WhatsApp y usuarios.</p>
+      <div id="cfg-content"></div>
+    </div>
+  </section>
+
+  <!-- SCRIPTS -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="./app.js"></script>
+  <script src="./fx-haptics.js"></script>
+  <script src="./fx-sound.js"></script>
+  <script src="./fx-skeletons.js"></script>
+  <script src="./fx-ptr.js"></script>
+  <script src="./fx-countup.js"></script>
+  <script src="./fx-dashbars.js"></script>
+  <script src="./fx-ripple.js"></script>
+  <script src="./fx-modalstagger.js"></script>
+
+  <!-- FASE 4: tableros por vista e Insights (van al final, envuelven a app.js) -->
+  <script src="./js/tableros.js"></script>
+  <script src="./js/insights.js"></script>
+  <!-- FASE 5 -->
+  <script src="./js/mitrabajo.js"></script>
+  <script src="./js/informes.js"></script>
+
+  <!-- FASE 6 (ajustes 11 y 12). Van de últimos: la rueda vigila el documento
+       para cambiar los campos de fecha en cuanto SweetAlert2 los pinta, y el
+       tema solo sincroniza el botón con lo que ya dejó puesto el <head>. -->
+  <script src="./js/rueda-fecha.js"></script>
+  <script src="./js/tema-oscuro.js"></script>
+</body>
+</html>
