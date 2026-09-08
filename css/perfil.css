@@ -1,0 +1,160 @@
+/* ============================================================
+   IPS VASCULAR — css/perfil.css              (NUEVO · FASE 7)
+   Pareja de js/perfil.js (ajuste 10).
+   ------------------------------------------------------------
+   Todo se pinta con las variables del sistema de diseño, así que
+   el modo oscuro de la Fase 6 lo toma solo. Las pocas superficies
+   con color escrito a mano llevan su repaso al final.
+   ============================================================ */
+
+/* ---------- avatar de Inicio ---------- */
+.welcome-bar__avatar.pf-av { position:relative; overflow:visible; cursor:pointer; }
+.welcome-bar__avatar.pf-av:active { transform:scale(.96); }
+.pf-av__img {
+  position:absolute; inset:0; width:100%; height:100%;
+  border-radius:50%; object-fit:cover; display:block;
+}
+.pf-av__cam {
+  position:absolute; right:-2px; bottom:-2px;
+  width:20px; height:20px; border-radius:50%;
+  background:var(--accent); color:#fff;
+  display:inline-flex; align-items:center; justify-content:center;
+  border:2px solid #fff; box-shadow:var(--sh-sm);
+}
+
+/* ---------- velo + hoja ---------- */
+body.pf-bloqueado { overflow:hidden; }
+.pf-velo {
+  position:fixed; inset:0; z-index:2400;
+  background:rgba(8,32,52,.55); backdrop-filter:blur(3px);
+  display:flex; align-items:flex-end; justify-content:center;
+  opacity:0; transition:opacity .18s ease;
+}
+.pf-velo.abierto { opacity:1; }
+.pf-hoja {
+  width:100%; max-width:440px;
+  background:var(--bg-card); color:var(--text-main);
+  border-radius:var(--r-xl) var(--r-xl) 0 0;
+  padding:10px 22px calc(22px + var(--safe-bottom));
+  box-shadow:var(--sh-xl);
+  transform:translateY(14px); transition:transform .2s ease;
+  max-height:92vh; overflow:auto; text-align:center;
+}
+.pf-velo.abierto .pf-hoja { transform:translateY(0); }
+.pf-hoja__asa {
+  width:44px; height:4px; border-radius:999px;
+  background:var(--border-strong); margin:4px auto 14px;
+}
+.pf-hoja__cara {
+  width:132px; height:132px; margin:0 auto 12px;
+  border-radius:50%; overflow:hidden;
+  background:linear-gradient(135deg,var(--primary-light),var(--primary));
+  display:flex; align-items:center; justify-content:center;
+  border:3px solid var(--bg-card); box-shadow:var(--sh-md);
+}
+.pf-hoja__cara img { width:100%; height:100%; object-fit:cover; display:block; }
+.pf-hoja__letra { font-family:var(--font-display); font-weight:900; font-size:3rem; color:#fff; }
+.pf-hoja__nombre { font-family:var(--font-display); font-weight:900; font-size:1.15rem; color:var(--primary); margin:0; }
+.pf-hoja__rol { font-size:.72rem; font-weight:800; letter-spacing:.6px; text-transform:uppercase; color:var(--text-muted); margin:4px 0 16px; }
+.pf-hoja__botones { display:flex; flex-direction:column; gap:8px; }
+.pf-hoja__pie { font-size:.72rem; color:var(--text-muted); margin:14px 0 0; }
+
+/* ---------- editor ---------- */
+.pf-hoja--editor { text-align:center; }
+.pf-ed__titulo { font-family:var(--font-display); font-weight:900; font-size:1.1rem; color:var(--primary); margin:2px 0 2px; }
+.pf-ed__ayuda { font-size:.76rem; color:var(--text-muted); margin:0 0 14px; }
+.pf-ed__marco {
+  position:relative; margin:0 auto 14px;
+  border-radius:var(--r-md); overflow:hidden;
+  background:var(--bg-soft); touch-action:none; cursor:grab;
+}
+.pf-ed__marco:active { cursor:grabbing; }
+.pf-ed__marco canvas { display:block; width:100%; height:100%; }
+.pf-ed__mascara {
+  position:absolute; inset:0; pointer-events:none;
+  box-shadow:0 0 0 2000px rgba(8,32,52,.42) inset;
+  border-radius:50%;
+}
+.pf-ed__controles { display:flex; align-items:center; gap:10px; margin:0 0 16px; }
+.pf-ed__icono { font-size:.95rem; }
+.pf-ed__controles input[type="range"] { flex:1; accent-color:var(--primary); }
+.pf-ed__girar {
+  width:38px; height:38px; border-radius:var(--r-sm);
+  background:var(--primary-soft); color:var(--primary);
+  font-size:1.1rem; font-weight:800; flex-shrink:0;
+}
+
+/* ---------- visor con zoom ---------- */
+.pf-visor {
+  position:fixed; inset:0; z-index:2600;
+  background:rgba(6,20,34,.94);
+  display:flex; flex-direction:column;
+  opacity:0; transition:opacity .18s ease;
+}
+.pf-visor.abierto { opacity:1; }
+.pf-visor__barra {
+  display:flex; align-items:center; gap:10px;
+  padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;
+  color:#eaf3f9;
+}
+.pf-visor__titulo { flex:1; font-weight:700; font-size:.95rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pf-visor__x { width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.14); color:#fff; font-size:1rem; }
+.pf-visor__lienzo {
+  flex:1; overflow:hidden; display:flex; align-items:center; justify-content:center;
+  touch-action:none;
+}
+.pf-visor__lienzo--movible { cursor:grab; }
+.pf-visor__lienzo img {
+  max-width:92vw; max-height:100%;
+  border-radius:var(--r-md);
+  transform-origin:center center;
+  transition:transform .06s linear;
+  user-select:none; -webkit-user-drag:none;
+}
+.pf-visor__pie {
+  display:flex; align-items:center; justify-content:center; gap:12px;
+  padding:14px 16px calc(16px + var(--safe-bottom));
+}
+.pf-visor__btn {
+  min-width:44px; height:44px; padding:0 14px; border-radius:var(--r-pill);
+  background:rgba(255,255,255,.14); color:#fff; font-size:1.2rem; font-weight:800;
+}
+.pf-visor__btn--txt { font-size:.85rem; }
+.pf-visor__nivel { color:#cfe3ef; font-size:.85rem; font-weight:700; min-width:56px; text-align:center; }
+
+/* El botón flotante del tema (Fase 6) queda justo encima de la ✕ del
+   visor: con la foto abierta se tocaba la luna en vez de cerrar. Se
+   esconde mientras haya una hoja o el visor abiertos, igual que ya
+   hacía la rueda de fecha. */
+body.pf-bloqueado .tema-btn { display:none !important; }
+
+/* Los avisos de SweetAlert2 (confirmar, errores, toasts) tienen que
+   quedar POR ENCIMA de la hoja y del visor: con su z-index de fábrica
+   el botón "Sí, quitar" salía debajo del velo y no se podía pulsar. */
+.swal2-container { z-index:3000; }
+
+/* ---------- caras en Configuración → Usuarios ---------- */
+.usr-card { position:relative; }
+.usr-card__avatar.pf-usr-av { overflow:hidden; padding:0; }
+.usr-card__avatar.pf-usr-av img { width:100%; height:100%; object-fit:cover; display:block; }
+.pf-usr-cam {
+  position:absolute; right:10px; top:50%; transform:translateY(-50%);
+  width:34px; height:34px; border-radius:50%;
+  background:var(--primary-soft); color:var(--primary);
+  display:inline-flex; align-items:center; justify-content:center;
+  border:1.5px solid var(--border-strong);
+}
+.pf-usr-cam:hover { background:var(--primary); color:#fff; }
+.usr-card__body { padding-right:38px; }
+
+/* ---------- repasos de modo oscuro ----------
+   Solo lo que lleva color escrito a mano. El resto ya viaja en
+   variables y cambia solo. */
+html[data-tema="oscuro"] .pf-velo { background:rgba(2,10,18,.68); }
+html[data-tema="oscuro"] .pf-av__cam { border-color:var(--bg-card); }
+html[data-tema="oscuro"] .pf-hoja__cara { border-color:var(--bg-card); }
+html[data-tema="oscuro"] .pf-ed__mascara { box-shadow:0 0 0 2000px rgba(2,10,18,.60) inset; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-velo, .pf-hoja, .pf-visor, .pf-visor__lienzo img { transition:none; }
+}
